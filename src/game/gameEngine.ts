@@ -14,6 +14,7 @@ export type Shipment = {
 export type WeekResult = {
   week: number;
   demand: number;
+  order?: number;
   incomingShipment: number;
   inventory: number;
   backorders: number;
@@ -31,6 +32,7 @@ export type GameState = {
   customerDemand: number;
   previousOrder: number;
   shipments: Shipment[];
+  demandSequence: readonly number[];
   history: WeekResult[];
   currentWeekResult: WeekResult;
   isComplete: boolean;
@@ -101,8 +103,9 @@ function openWeek(
   shipments: Shipment[],
   previousOrder: number,
   history: WeekResult[],
+  demandSequence: readonly number[],
 ): GameState {
-  const customerDemand = CUSTOMER_DEMAND[week - 1];
+  const customerDemand = demandSequence[week - 1];
 
   if (customerDemand === undefined) {
     throw new Error(`No customer demand is configured for week ${week}.`);
@@ -126,6 +129,7 @@ function openWeek(
     customerDemand,
     previousOrder,
     shipments: currentWeekResult.remainingShipments,
+    demandSequence,
     history,
     currentWeekResult,
     isComplete: false,
@@ -134,12 +138,20 @@ function openWeek(
 
 export function createGameState(
   configInput: unknown = GAME_CONFIG_INPUT,
+  demandSequence: readonly number[] = CUSTOMER_DEMAND,
 ): GameState {
   const config = validateGameConfig(configInput);
 
-  if (CUSTOMER_DEMAND.length !== config.totalWeeks) {
+  if (!Array.isArray(demandSequence) || demandSequence.length !== config.totalWeeks) {
     throw new Error("Customer demand must define exactly one value per week.");
   }
+
+  const validatedDemand = demandSequence.map((value) => {
+    if (!Number.isInteger(value) || value < 0 || !Number.isFinite(value)) {
+      throw new Error("Customer demand values must be finite non-negative integers.");
+    }
+    return value;
+  });
 
   return openWeek(
     config,
@@ -154,7 +166,12 @@ export function createGameState(
     ],
     INITIAL_GAME_VALUES.previousOrder,
     [],
+    validatedDemand,
   );
+}
+
+export function getOrderArrivalWeek(currentWeek: number, config: GameConfig): number {
+  return currentWeek + config.shippingDelayWeeks;
 }
 
 export function submitOrder(state: GameState, quantity: number): GameState {
@@ -166,7 +183,7 @@ export function submitOrder(state: GameState, quantity: number): GameState {
     throw new Error("Order quantity must be a finite, non-negative number.");
   }
 
-  const history = [...state.history, state.currentWeekResult];
+  const history = [...state.history, { ...state.currentWeekResult, order: quantity }];
 
   if (state.currentWeek === state.config.totalWeeks) {
     return {
@@ -181,7 +198,7 @@ export function submitOrder(state: GameState, quantity: number): GameState {
   const shipments = [
     ...state.shipments,
     {
-      arrivalWeek: state.currentWeek + state.config.shippingDelayWeeks,
+      arrivalWeek: getOrderArrivalWeek(state.currentWeek, state.config),
       quantity,
     },
   ];
@@ -194,6 +211,7 @@ export function submitOrder(state: GameState, quantity: number): GameState {
     shipments,
     quantity,
     history,
+    state.demandSequence,
   );
 }
 
