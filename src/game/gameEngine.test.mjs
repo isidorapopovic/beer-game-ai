@@ -119,6 +119,7 @@ test("game ends after Week 10 and ignores any further order", () => {
   assert.equal(state.isComplete, true);
   assert.equal(getGameSummary(state).totalCustomerDemand, totalDemand);
   assert.equal(state.history.length, 10);
+  assert.deepEqual(state.history.map((week) => week.order), Array(10).fill(0));
   assert.equal(getGameSummary(state).totalBackorderedUnits, 48);
   assert.equal(getGameSummary(state).maximumBackorder, 48);
   assert.equal(getGameSummary(state).averageWeeklyInventory, 2.4);
