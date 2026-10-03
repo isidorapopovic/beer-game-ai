@@ -130,6 +130,109 @@ test("unknown tool is rejected before execution", async () => {
   assert.equal(result.toolCallCount, 0);
 });
 
+test("invalid tool arguments are rejected before execution", async () => {
+  let toolCalls = 0;
+  const registry = {
+    simulateCandidateOrder: {
+      ...toolRegistry.getCurrentGameState,
+      name: "simulateCandidateOrder",
+      allowedWorkflows: ["candidate_order_simulation"],
+      argsSchema: {
+        type: "object",
+        properties: { orderQuantity: { type: "integer", minimum: 0, maximum: 50 } },
+        required: ["orderQuantity"],
+        additionalProperties: false,
+      },
+      execute: () => {
+        toolCalls += 1;
+        return {};
+      },
+    },
+  };
+  const orchestrator = new BoundedAgentOrchestrator({
+    registry,
+    workflow: "candidate_order_simulation",
+  });
+  const run = orchestrator.createRun({
+    goal: "simulate a candidate order",
+    deadlineAt: new Date(Date.now() + 10_000).toISOString(),
+  });
+
+  const result = await orchestrator.executeRun({
+    run,
+    modelStep: async () => ({
+      kind: "tool_request",
+      toolRequest: { name: "simulateCandidateOrder", arguments: { orderQuantity: "9" } },
+    }),
+    modelStep2: async () => ({ kind: "refusal" }),
+  });
+
+  assert.equal(result.status, "stopped");
+  assert.equal(result.stopReason, "invalid_tool_arguments");
+  assert.equal(result.toolCallCount, 0);
+  assert.equal(toolCalls, 0);
+});
+
+test("tool result arrays must match the declared schema", async () => {
+  const registry = {
+    ...toolRegistry,
+    getCurrentGameState: {
+      ...toolRegistry.getCurrentGameState,
+      resultSchema: {
+        type: "object",
+        properties: { facts: { type: "array" } },
+        required: ["facts"],
+      },
+      execute: async () => ({ facts: {} }),
+    },
+  };
+  const orchestrator = new BoundedAgentOrchestrator({ registry, workflow: "decision_coach" });
+  const run = orchestrator.createRun({
+    goal: "read facts",
+    deadlineAt: new Date(Date.now() + 10_000).toISOString(),
+  });
+  const result = await orchestrator.executeRun({
+    run,
+    modelStep: async () => ({
+      kind: "tool_request",
+      toolRequest: { name: "getCurrentGameState", arguments: {} },
+    }),
+    modelStep2: async () => ({ kind: "refusal" }),
+  });
+
+  assert.equal(result.status, "failed");
+  assert.equal(result.stopReason, "invalid_tool_result");
+  assert.equal(result.toolCallCount, 0);
+});
+
+test("agent deadline bounds provider execution", async () => {
+  const orchestrator = new BoundedAgentOrchestrator({
+    registry: toolRegistry,
+    workflow: "decision_coach",
+  });
+  const run = orchestrator.createRun({
+    goal: "test the agent deadline",
+    deadlineAt: new Date(Date.now() + 30).toISOString(),
+  });
+  let secondStepCalled = false;
+
+  const result = await orchestrator.executeRun({
+    run,
+    modelStep: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      return { kind: "refusal" };
+    },
+    modelStep2: async () => {
+      secondStepCalled = true;
+      return { kind: "refusal" };
+    },
+  });
+
+  assert.equal(result.status, "stopped");
+  assert.equal(result.stopReason, "deadline");
+  assert.equal(secondStepCalled, false);
+});
+
 test("tool call limit blocks additional execution", async () => {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: toolRegistry,
@@ -215,4 +318,66 @@ test("createAgentRun produces a normalized initial state", () => {
   assert.equal(run.stepCount, 0);
   assert.equal(run.toolCallCount, 0);
   assert.ok(Array.isArray(run.recentActions));
+});
+
+test("repeated tool requests are stopped as repeated_action", async () => {
+  const orchestrator = new BoundedAgentOrchestrator({
+    registry: toolRegistry,
+    workflow: "decision_coach",
+  });
+
+  const run = orchestrator.createRun({
+    goal: "check for repeated action",
+    deadlineAt: new Date(Date.now() + 10_000).toISOString(),
+  });
+
+  const result = await orchestrator.executeRun({
+    run,
+    modelStep: async () => ({
+      kind: "tool_request",
+      toolRequest: { name: "getCurrentGameState", arguments: {} },
+    }),
+    modelStep2: async () => ({
+      kind: "tool_request",
+      toolRequest: { name: "getCurrentGameState", arguments: {} },
+    }),
+  });
+
+  assert.equal(result.status, "stopped");
+  assert.equal(result.stopReason, "repeated_action");
+  assert.equal(result.toolCallCount, 1);
+});
+
+test("run evidence exposes structured execution metadata", async () => {
+  const orchestrator = new BoundedAgentOrchestrator({
+    registry: toolRegistry,
+    workflow: "decision_coach",
+  });
+
+  const run = orchestrator.createRun({
+    goal: "generate evidence",
+    deadlineAt: new Date(Date.now() + 10_000).toISOString(),
+  });
+
+  const result = await orchestrator.executeRun({
+    run,
+    modelStep: async () => ({
+      kind: "tool_request",
+      toolRequest: { name: "getCurrentGameState", arguments: {} },
+    }),
+    modelStep2: async () => ({
+      kind: "final",
+      final: {
+        summary: "Evidence captured.",
+        evidence: [{ source: "game_state", fact: "Inventory is fine." }],
+        completed: true,
+      },
+    }),
+  });
+
+  assert.ok(result.evidence);
+  assert.ok(Array.isArray(result.evidence.toolsAttempted));
+  assert.ok(Array.isArray(result.evidence.validationResults));
+  assert.ok(typeof result.evidence.elapsedMs === "number");
+  assert.equal(result.evidence.stopReason, "completed");
 });
