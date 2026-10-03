@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
-    "test": "node --test src/game/gameEngine.test.mjs src/aiHint/aiHintFlow.test.mjs",
+    "test": "node --test src/game/gameEngine.test.mjs src/aiHint/aiHintFlow.test.mjs src/agent/boundedAgent.test.mjs src/agent/decisionCoach.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
