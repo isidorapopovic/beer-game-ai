@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
-    "test": "node --test src/game/gameEngine.test.mjs src/aiHint/aiHintFlow.test.mjs src/agent/boundedAgent.test.mjs src/agent/decisionCoach.test.mjs src/agent/candidateOrderSimulation.test.mjs src/agent/gameAnalyst.test.mjs src/agent/scenarioGenerator.test.mjs",
-    "preview": "vite preview"
+    "test": "node --test src/game/gameEngine.test.mjs src/aiHint/aiHintFlow.test.mjs src/agent/boundedAgent.test.mjs src/agent/decisionCoach.test.mjs src/agent/candidateOrderSimulation.test.mjs src/agent/gameAnalyst.test.mjs src/agent/scenarioGenerator.test.mjs server/integration.test.mjs",
+    "preview": "vite preview",
+    "agent:dev": "node --env-file-if-exists=.env server/index.mjs",
+    "test:live": "node --env-file-if-exists=.env server/liveSmoke.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

@@ -1,5 +1,7 @@
 # Week 05 / Agentic Workflows Evidence
 
+> **Integration update (2026-10-03):** the UI now uses a server-side Gemini adapter for all four workflows. Gemini credentials and live/browser smoke are pending. Updated automated checks: 79 passed, 0 failed; production build passed. See [Gemini integration and setup](WEEK5_GEMINI_INTEGRATION.md). The original mock-only record and unfinished templates below are retained as historical evidence; they do not certify live integration.
+
 > This file documents the actual Week 05 implementation, validation, and final integration as observed in the repository and verified by the executed tests/build. The data below reflects the repository state on 2026-10-03.
 
 ---

@@ -1,44 +1,15 @@
 import { useState, type FormEvent } from "react";
 import {
-  AI_HINT_CALLER,
-  SAFE_HINT_FALLBACK,
-} from "./aiHint/contracts";
-import type { HintFlowResult } from "./aiHint/hintService";
-import { FakeHintModelClient } from "./aiHint/fakeHintModelClient";
-import { createSnapshotReader } from "./aiHint/hintService";
-import {
   createGameState,
   getGameSummary,
   submitOrder,
 } from "./game/gameEngine";
 import type { GameState } from "./game/gameEngine";
-import { requestAIHint } from "./aiHint/hintService";
-import {
-  executeCandidateOrderSimulation,
-} from "./agent/candidateOrderSimulation";
-import type {
-  CandidateOrderAdviceResult,
-  CandidateOrderSimulationResult,
-} from "./agent/candidateOrderSimulation";
-import {
-  executeDecisionCoach,
-  type DecisionCoachResult,
-} from "./agent/decisionCoach";
-import {
-  executeGameAnalyst,
-  formatGameHistoryFact,
-} from "./agent/gameAnalyst";
-import type {
-  GameHistoryResult,
-  PostGameAnalysisResult,
-} from "./agent/gameAnalyst";
-import {
-  executeScenarioGenerator,
-  generateScenarioDemand,
-  type ScenarioDifficulty,
-  type ScenarioType,
-  type ScenarioSelectionResult,
-} from "./agent/scenarioGenerator";
+import type { CandidateOrderAdviceResult } from "./agent/candidateOrderSimulation";
+import type { DecisionCoachResult } from "./agent/decisionCoach";
+import type { PostGameAnalysisResult } from "./agent/gameAnalyst";
+import { generateScenarioDemand, type ScenarioDifficulty, type ScenarioType, type ScenarioSelectionResult } from "./agent/scenarioGenerator";
+import { requestAgent, type AgentEvidence } from "./agent/agentClient";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -62,11 +33,9 @@ function App() {
   const [gameState, setGameState] = useState<GameState | null>(
     initialization.state,
   );
+  const [agentEvidence, setAgentEvidence] = useState<AgentEvidence | null>(null);
   const [orderInput, setOrderInput] = useState("");
   const [actionError, setActionError] = useState("");
-  const [hintResult, setHintResult] = useState<HintFlowResult | null>(null);
-  const [hintDisplayError, setHintDisplayError] = useState("");
-  const [hintLoading, setHintLoading] = useState(false);
   const [candidateAdvice, setCandidateAdvice] = useState<CandidateOrderAdviceResult | null>(null);
   const [candidateError, setCandidateError] = useState("");
   const [candidateLoading, setCandidateLoading] = useState(false);
@@ -81,6 +50,7 @@ function App() {
   const [scenarioLoading, setScenarioLoading] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("growth");
   const [selectedDifficulty, setSelectedDifficulty] = useState<ScenarioDifficulty>("medium");
+  const aiBusy = candidateLoading || decisionCoachLoading || analysisLoading || scenarioLoading;
 
   if (!gameState) {
     return (
@@ -95,31 +65,6 @@ function App() {
   const summary = getGameSummary(gameState);
   const isComplete = gameState.isComplete;
 
-  async function handleAskForHint() {
-    if (hintLoading || !gameState) {
-      return;
-    }
-
-    const requestedState = gameState;
-    setHintLoading(true);
-    setHintResult(null);
-    setHintDisplayError("");
-
-    try {
-      const result = await requestAIHint({
-        state: requestedState,
-        caller: AI_HINT_CALLER,
-        modelClient: new FakeHintModelClient(),
-        readGameState: createSnapshotReader(requestedState),
-      });
-      setHintResult(result);
-    } catch {
-      setHintDisplayError(SAFE_HINT_FALLBACK);
-    } finally {
-      setHintLoading(false);
-    }
-  }
-
   async function handleSimulateCandidateOrder() {
     if (candidateLoading || !gameState || gameState.isComplete) {
       return;
@@ -131,42 +76,11 @@ function App() {
     setCandidateError("");
 
     try {
-      const result = await executeCandidateOrderSimulation({
-        state: requestedState,
-        goal: "What should I order?",
-        modelStep: async () => ({
-          kind: "tool_request",
-          toolRequest: {
-            name: "simulateCandidateOrder",
-            arguments: { orderQuantity: requestedState.previousOrder },
-          },
-        }),
-        modelStep2: async (_run, toolResult) => {
-          const simulation = toolResult as CandidateOrderSimulationResult;
-          return {
-            kind: "final",
-            final: {
-              summary: "The demo model checked the candidate against the current shipment pipeline.",
-              recommendation: `Candidate order: ${simulation.orderQuantity} units.`,
-              recommendedOrderQuantity: simulation.orderQuantity,
-              simulation,
-              evidence: [
-                {
-                  source: "candidate_order_simulation",
-                  fact: simulation.candidateShipmentArrivalWeek === undefined
-                    ? "The game ends before a new order could arrive."
-                    : `The candidate order is scheduled to arrive in week ${simulation.candidateShipmentArrivalWeek}.`,
-                },
-              ],
-              confidence: "medium",
-              completed: true,
-            },
-          };
-        },
-      });
+      const result = await requestAgent<CandidateOrderAdviceResult>("candidate_order_simulation", requestedState, `Simulate my candidate order: ${orderInput.trim() || requestedState.previousOrder} units. Use that exact quantity.`);
+      setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error("The candidate simulation could not be completed.");
+        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setCandidateAdvice(result.finalOutput);
     } catch (error) {
@@ -187,54 +101,11 @@ function App() {
     setDecisionCoachError("");
 
     try {
-      const result = await executeDecisionCoach({
-        state: requestedState,
-        goal: "How much should I order this week and why?",
-        modelStep: async () => ({
-          kind: "tool_request",
-          toolRequest: { name: "getCurrentGameState", arguments: {} },
-        }),
-        modelStep2: async (_run, toolResult) => {
-          const snapshot = toolResult as {
-            week: number;
-            inventory: number;
-            backorder: number;
-            incomingShipments: number[];
-            recentDemand: number[];
-            recentOrders: number[];
-            totalCost: number;
-          };
-          const latestDemand = snapshot.recentDemand[snapshot.recentDemand.length - 1] ?? 0;
-          const recommendedOrderQuantity = Math.max(
-            0,
-            Math.min(50, latestDemand + snapshot.backorder - snapshot.inventory),
-          );
-
-          return {
-            kind: "final",
-            final: {
-              summary: "The current pipeline suggests a modest increase when backlog and recent demand are both elevated.",
-              recommendation: `Order ${recommendedOrderQuantity} units.`,
-              recommendedOrderQuantity,
-              evidence: [
-                {
-                  source: "game_state",
-                  fact: `Inventory is ${snapshot.inventory} units while backorders total ${snapshot.backorder}.`,
-                },
-                {
-                  source: "game_state",
-                  fact: `Recent demand is ${snapshot.recentDemand.join(", ")} and incoming shipments are ${snapshot.incomingShipments.join(", ") || "none"}.`,
-                },
-              ],
-              confidence: "medium",
-              completed: true,
-            },
-          };
-        },
-      });
+      const result = await requestAgent<DecisionCoachResult>("decision_coach", requestedState, `How much should I order this week and why?`);
+      setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error("The decision coach could not complete a valid recommendation.");
+        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setDecisionCoachResult(result.finalOutput);
     } catch (error) {
@@ -245,62 +116,38 @@ function App() {
   }
 
   async function handleGenerateScenario() {
+    if (scenarioLoading || (!gameState?.isComplete && gameState?.history.length)) return;
     setScenarioLoading(true);
     setScenarioSelection(null);
     setScenarioError("");
 
     try {
       const baseState = createGameState();
-      const result = await executeScenarioGenerator({
-        state: baseState,
-        goal: `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`,
-        modelStep: async () => ({
-          kind: "tool_request",
-          toolRequest: { name: "getAllowedScenarioTypes", arguments: {} },
-        }),
-        modelStep2: async () => ({
-          kind: "final",
-          final: {
-            summary: `The selected ${selectedScenario} scenario uses ${selectedDifficulty} difficulty and is approved for a new game start.`,
-            scenario: selectedScenario,
-            difficulty: selectedDifficulty,
-            explanation: `The ${selectedScenario} scenario is appropriate because it follows the trusted approved catalog and uses ${selectedDifficulty} intensification for a new game run.`,
-            evidence: [
-              { source: "allowed_scenarios", fact: selectedScenario },
-              { source: "allowed_scenarios", fact: selectedDifficulty },
-            ],
-            confidence: "medium",
-            completed: true,
-          },
-        }),
-      });
+      const result = await requestAgent<ScenarioSelectionResult>("scenario_generator", baseState, `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`);
+      setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error("The scenario generator could not select a valid profile.");
+        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
       }
 
-      const demandSequence = generateScenarioDemand({
-        scenario: result.finalOutput.scenario,
-        difficulty: result.finalOutput.difficulty,
-        seed: Date.now() % 17,
-      });
-      const nextGame = createGameState(undefined, demandSequence);
-
-      setGameState(nextGame);
-      setOrderInput("");
-      setActionError("");
-      setHintResult(null);
-      setHintDisplayError("");
-      setCandidateAdvice(null);
-      setCandidateError("");
-      setDecisionCoachResult(null);
-      setDecisionCoachError("");
       setScenarioSelection(result.finalOutput);
     } catch (error) {
       setScenarioError(error instanceof Error ? error.message : "The scenario generator failed.");
     } finally {
       setScenarioLoading(false);
     }
+  }
+
+  function handleStartSelectedScenario() {
+    if (!scenarioSelection || (!gameState?.isComplete && gameState?.history.length)) return;
+    const demandSequence = generateScenarioDemand({
+      scenario: scenarioSelection.scenario, difficulty: scenarioSelection.difficulty, seed: 5,
+    });
+    setGameState(createGameState(undefined, demandSequence));
+    setOrderInput(""); setActionError("");
+    setCandidateAdvice(null); setCandidateError(""); setDecisionCoachResult(null);
+    setDecisionCoachError(""); setPostGameAnalysis(null); setAnalysisError("");
+    setScenarioSelection(null); setAgentEvidence(null);
   }
 
   async function handleAnalyzeGame() {
@@ -314,43 +161,11 @@ function App() {
     setAnalysisError("");
 
     try {
-      const result = await executeGameAnalyst({
-        state: completedState,
-        goal: "Analyze my completed Beer Game and give evidence-based lessons.",
-        modelStep: async () => ({
-          kind: "tool_request",
-          toolRequest: { name: "getGameHistory", arguments: {} },
-        }),
-        modelStep2: async (_run, toolResult) => {
-          const history = toolResult as GameHistoryResult;
-          const highestCostWeek = history.weeks.reduce((highest, week) => (
-            week.cost > highest.cost ? week : highest
-          ));
-          const costFact = formatGameHistoryFact(highestCostWeek, "cost");
-          return {
-            kind: "final",
-            final: {
-              summary: `The game finished with ${currency.format(history.totalCost)} in total cost across ${history.totalWeeks} weeks.`,
-              findings: [{
-                type: "cost_driver",
-                title: `Highest weekly cost: Week ${highestCostWeek.week}`,
-                explanation: `${costFact} Review the inventory and backorder pattern from this week when planning your next game.`,
-                weeks: [highestCostWeek.week],
-                evidence: [{ source: "game_history", fact: costFact }],
-              }],
-              nextGameAdvice: [
-                "Account for the verified two-week shipping delay before reacting to a shortage.",
-                "Compare each order with the demand and shipment history before making a large adjustment.",
-              ],
-              confidence: "medium",
-              completed: true,
-            },
-          };
-        },
-      });
+      const result = await requestAgent<PostGameAnalysisResult>("game_analyst", completedState, `Analyze my completed Beer Game and give evidence-based lessons.`);
+      setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error("The game analysis could not be completed.");
+        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setPostGameAnalysis(result.finalOutput);
     } catch (error) {
@@ -363,7 +178,7 @@ function App() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!gameState || gameState.isComplete) {
+    if (!gameState || gameState.isComplete || aiBusy) {
       return;
     }
 
@@ -378,8 +193,8 @@ function App() {
       setGameState(submitOrder(gameState, quantity));
       setOrderInput("");
       setActionError("");
-      setHintResult(null);
-      setHintDisplayError("");
+
+
       setCandidateAdvice(null);
       setCandidateError("");
     } catch (error) {
@@ -511,7 +326,7 @@ function App() {
                 className="hint-trigger analyze-trigger"
                 type="button"
                 onClick={handleAnalyzeGame}
-                disabled={analysisLoading}
+                disabled={aiBusy}
               >
                 {analysisLoading ? "Analyzing game..." : "Analyze my game"}
               </button>
@@ -543,7 +358,7 @@ function App() {
                     }}
                     aria-invalid={actionError !== ""}
                     aria-describedby={actionError ? "order-error" : undefined}
-                    disabled={isComplete}
+                    disabled={isComplete || aiBusy}
                   />
                   <span>units</span>
                 </div>
@@ -552,7 +367,7 @@ function App() {
                     {actionError}
                   </p>
                 )}
-                <button type="submit" disabled={isComplete}>
+                <button type="submit" disabled={isComplete || aiBusy}>
                   Submit order <span aria-hidden="true">→</span>
                 </button>
               </form>
@@ -560,7 +375,7 @@ function App() {
                 className="hint-trigger"
                 type="button"
                 onClick={handleSimulateCandidateOrder}
-                disabled={candidateLoading || isComplete}
+                disabled={aiBusy || isComplete}
               >
                 {candidateLoading ? "Simulating candidate..." : "Simulate candidate order"}
               </button>
@@ -570,36 +385,10 @@ function App() {
             className="hint-trigger"
             type="button"
             onClick={handleAskForDecisionCoach}
-            disabled={decisionCoachLoading || isComplete}
+            disabled={aiBusy || isComplete}
           >
             {decisionCoachLoading ? "Consulting decision coach..." : "AI Decision Coach"}
           </button>
-          <button
-            className="hint-trigger"
-            type="button"
-            onClick={handleAskForHint}
-            disabled={hintLoading}
-          >
-            {hintLoading ? "Requesting hint..." : "Ask AI for Hint"}
-          </button>
-          {(hintResult || hintDisplayError) && (
-            <section
-              className="hint-response"
-              aria-live="polite"
-              role="status"
-            >
-              <p className="eyebrow">AI hint</p>
-              <p>{hintResult?.message ?? hintDisplayError}</p>
-              {hintResult?.response && (
-                <div className="hint-details">
-                  <span>
-                    Suggested action: {hintResult.response.suggestedAction.replaceAll("_", " ")}
-                  </span>
-                  <span>Urgency: {hintResult.response.urgency}</span>
-                </div>
-              )}
-            </section>
-          )}
           {(decisionCoachResult || decisionCoachError) && (
             <section className="decision-coach" aria-live="polite" role="status">
               <p className="eyebrow">Decision coach · bounded flow</p>
@@ -629,7 +418,7 @@ function App() {
           )}
           {(candidateAdvice || candidateError) && (
             <section className="candidate-simulation" aria-live="polite" role="status">
-              <p className="eyebrow">Candidate simulation · demo model</p>
+              <p className="eyebrow">Candidate simulation · Gemini</p>
               {candidateError ? (
                 <p className="inline-error">{candidateError}</p>
               ) : candidateAdvice ? (
@@ -692,8 +481,8 @@ function App() {
           </label>
         </div>
 
-        <button className="scenario-button" type="button" onClick={handleGenerateScenario} disabled={scenarioLoading}>
-          {scenarioLoading ? "Generating scenario..." : "Start new game from selected scenario"}
+        <button className="scenario-button" type="button" onClick={handleGenerateScenario} disabled={aiBusy || (!isComplete && gameState.history.length > 0)}>
+          {scenarioLoading ? "Generating scenario..." : "Ask AI for selected scenario"}
         </button>
 
         {scenarioError && <p className="inline-error" role="alert">{scenarioError}</p>}
@@ -704,6 +493,8 @@ function App() {
             </p>
             <p>{scenarioSelection.summary}</p>
             <p className="scenario-note">{scenarioSelection.explanation}</p>
+            <p>The game engine will generate ten weeks of demand. Starting requires your action.</p>
+            <button type="button" onClick={handleStartSelectedScenario} disabled={aiBusy || (!isComplete && gameState.history.length > 0)}>Start this scenario</button>
           </div>
         )}
       </section>
@@ -749,7 +540,7 @@ function App() {
         <section className="analysis-section" aria-labelledby="analysis-heading" aria-live="polite">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Post-game analysis · demo model</p>
+              <p className="eyebrow">Post-game analysis · Gemini</p>
               <h2 id="analysis-heading">What the history shows</h2>
             </div>
             <span className="analysis-confidence">Confidence: {postGameAnalysis.confidence}</span>
@@ -778,6 +569,12 @@ function App() {
         </section>
       )}
 
+      {agentEvidence && (
+        <section aria-live="polite" className="scenario-panel">
+          <p>AI status: {agentEvidence.status} · {agentEvidence.stopReason}</p>
+          <p>Provider: {agentEvidence.provider} · Model calls: {agentEvidence.modelCalls} · Tool calls: {agentEvidence.toolCallCount} · Steps: {agentEvidence.stepCount}</p>
+        </section>
+      )}
       <footer className="footer-line">
         <span>Retailer</span>
         <span>Week {gameState.currentWeek} of {gameState.config.totalWeeks}</span>
