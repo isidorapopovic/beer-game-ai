@@ -1,4 +1,4 @@
-import { BoundedAgentOrchestrator, AGENT_LIMITS, type AgentRunState, type RunExecutionResult, type StopReason, type WorkflowId } from "./boundedAgent.ts";
+import { BoundedAgentOrchestrator, AGENT_LIMITS, type AgentRunState, type RunExecutionResult, type StopReason, type ToolDescriptor, type WorkflowId } from "./boundedAgent.ts";
 import type { GameState } from "../game/gameEngine.ts";
 
 export type DecisionCoachEvidence = {
@@ -104,7 +104,7 @@ export function normalizeDecisionCoachResult(input: unknown): DecisionCoachResul
   };
 }
 
-function buildDecisionCoachRegistry(state: GameState) {
+function buildDecisionCoachRegistry(state: GameState): Record<string, ToolDescriptor> {
   return {
     getCurrentGameState: {
       name: "getCurrentGameState",
@@ -118,9 +118,9 @@ function buildDecisionCoachRegistry(state: GameState) {
           week: { type: "number" },
           inventory: { type: "number" },
           backorder: { type: "number" },
-          incomingShipments: { type: "object" },
-          recentDemand: { type: "object" },
-          recentOrders: { type: "object" },
+          incomingShipments: { type: "array" },
+          recentDemand: { type: "array" },
+          recentOrders: { type: "array" },
           totalCost: { type: "number" },
         },
         required: ["week", "inventory", "backorder", "incomingShipments", "recentDemand", "recentOrders", "totalCost"],
@@ -134,7 +134,7 @@ function buildDecisionCoachRegistry(state: GameState) {
         return getCurrentGameStateTool(providedState);
       },
     },
-  } as const;
+  };
 }
 
 export type DecisionCoachRunResult = {
@@ -221,7 +221,6 @@ export async function executeDecisionCoach({
   const runResult = await orchestrator.executeRun({
     run,
     modelStep: async (currentRun) => {
-      const snapshot = getCurrentGameStateTool(state);
       const result = await modelStep(currentRun);
       if (result && typeof result === "object" && "kind" in (result as Record<string, unknown>)) {
         return result;
