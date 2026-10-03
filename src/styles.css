@@ -183,6 +183,73 @@ p {
   font-weight: 700;
 }
 
+.analyze-trigger {
+  margin-top: var(--space-3);
+}
+
+.analysis-section {
+  margin-top: 28px;
+  padding-top: var(--space-5);
+  border-top: 2px solid var(--green);
+}
+
+.analysis-section > .section-heading {
+  align-items: flex-end;
+}
+
+.analysis-confidence {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.analysis-summary {
+  max-width: 720px;
+  margin: var(--space-4) 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.analysis-findings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-4);
+}
+
+.analysis-finding {
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+}
+
+.analysis-finding h3,
+.next-game-advice h3 {
+  margin-bottom: var(--space-2);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.analysis-finding > p:not(.eyebrow),
+.analysis-finding li,
+.next-game-advice li {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.analysis-finding ul,
+.next-game-advice ul {
+  margin: var(--space-2) 0 0;
+  padding-left: 18px;
+}
+
+.next-game-advice {
+  max-width: 740px;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
 .metric dd {
   margin: var(--space-3) 0 var(--space-1);
   font-family: Georgia, "Times New Roman", serif;
@@ -416,6 +483,56 @@ p {
   font-size: 12px;
 }
 
+.candidate-simulation,
+.decision-coach {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.candidate-simulation > p:not(.eyebrow),
+.decision-coach > p:not(.eyebrow) {
+  margin: 0 0 var(--space-2);
+}
+
+.candidate-recommendation {
+  color: var(--ink);
+}
+
+.coach-evidence {
+  margin: var(--space-2) 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.candidate-recommendation strong {
+  color: var(--green);
+}
+
+.candidate-simulation .simulation-limit {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.use-candidate {
+  min-height: 36px;
+  margin-top: var(--space-1);
+  padding: 0 10px;
+  border: 1px solid #b9c9b9;
+  border-radius: 3px;
+  color: var(--green);
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.use-candidate:hover {
+  background: var(--green-light);
+}
+
 .inline-error {
   margin: 10px 0 0;
   color: #9c3327;
@@ -447,6 +564,75 @@ p {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 32px;
   font-weight: 500;
+}
+
+.scenario-panel {
+  margin-top: 26px;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.scenario-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.scenario-controls label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scenario-controls select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #b9c9b9;
+  border-radius: 3px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.scenario-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: var(--space-3);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: 3px;
+  color: #fff;
+  background: var(--green);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.scenario-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.scenario-status {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.scenario-status strong {
+  color: var(--ink);
+}
+
+.scenario-note {
+  color: var(--muted);
 }
 
 .summary-section {
