@@ -1,7 +1,9 @@
 # Implementation plan: Low-cost AI
 
-Specification: [spec.md](spec.md)  
-Status: Planned, not implemented  
+Specification: [spec.md](spec.md)
+
+Status: Planned, not implemented
+
 Starting code: `46341d6` on `feature/week5-bounded-agent-workflows`
 
 ## Approach

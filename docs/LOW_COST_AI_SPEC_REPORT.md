@@ -1,0 +1,62 @@
+# Low-cost AI specification: delivery and commit report
+
+Date: 2026-10-29
+
+## Delivered outcome
+
+Prepared a Spec Kit-style feature specification recommending `gemini-3.1-flash-lite`, with an implementation plan and 23 unchecked implementation tasks. This delivery changes documentation only. It does not configure a model, edit credentials, deploy limits, or call a live provider.
+
+Start with [the specification](../specs/001-low-cost-ai/spec.md), then [the plan](../specs/001-low-cost-ai/plan.md) and [tasks](../specs/001-low-cost-ai/tasks.md).
+
+## Git boundary
+
+- New local branch: `docs/cheap-ai-model-spec`.
+- Starting branch: `feature/week5-bounded-agent-workflows`.
+- Starting commit: `46341d690d61d0a5f3c0cdf9e1434c30f6a925d5`.
+- Existing `main` reference: `e69ece45c785fcac21214b20bb7c4571a69cc81f`.
+- Work was based on the existing Week 5 feature branch to preserve its latest integration context.
+- No push, merge, reset, or change to `main` was performed. Private `.env` was not edited or staged.
+
+## Every commit in this delivery
+
+### 1. `de7529a` — `docs(ai): specify low-cost model and usage controls`
+
+Created three files:
+
+- `specs/001-low-cost-ai/spec.md`: model decision, dated official sources, short-response budgets, exact input-token preflight, token usage/cost evidence, generation/count request ceilings, local quotas, persistent spending reservations, edge cases, and acceptance criteria.
+- `specs/001-low-cost-ai/plan.md`: repository-specific code touchpoints, dependency order, verification, rollout, and six proposed future implementation commits.
+- `specs/001-low-cost-ai/tasks.md`: 23 future tasks; all unchecked to avoid implying runtime implementation is complete.
+
+Why: turn the request for simple, cheap AI into a concrete, reviewable implementation contract while preserving the Week 5 two-model-step/tool architecture.
+
+### 2. Report commit — `docs(ai): record specification delivery and validation`
+
+Adds this report and removes Markdown trailing spaces identified by `git diff --check` in the first commit. Its exact hash is available in `git log` and the delivery message; it cannot embed its own Git hash without changing that hash.
+
+Why: describe the actual documentation commits, distinguish future work from delivered work, and record the checks and branch boundary.
+
+The six commits listed in `plan.md` are proposed future runtime changes. They are not additional commits made in this delivery.
+
+## Recommendation and proposed policy
+
+Recommend the lightweight 3.1 Flash-Lite profile for the current Gemini server. Prices and suitability are researched recommendations, not an observed quality benchmark. The cheaper 2.5 profile has access restrictions for new users; the newer 3.5 profile costs more. See the specification's dated [pricing](https://ai.google.dev/gemini-api/docs/pricing), [availability](https://ai.google.dev/gemini-api/docs/deprecations), and [model](https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-lite) sources.
+
+Proposed controls include 500-code-point goals, full-prompt token counting, a 128-token proposal, 384–1,024-token final caps, two generation calls plus at most two count-token calls, no retries/upgrades, a 20-second deadline, one active request, six admitted actions/minute, 100/day, and a $1/day application estimate allowance. The allowance must retain conservative reservations when provider usage is unknown. It is not a billing-account spending guarantee.
+
+## Verification actually performed
+
+| Check | Result |
+|---|---|
+| `npm.cmd test` | PASS: 79 passed, 0 failed, 0 skipped |
+| `npm.cmd run typecheck` | PASS |
+| Whitespace review | Initial commit had five Markdown hard-break trailing spaces; removed in report commit |
+| Local Markdown links | Specification, plan, tasks, and report targets checked |
+| Scope review | Only the four Markdown files in this delivery; no runtime source or environment changes |
+| Live Gemini requests | NOT RUN; no live quality, thinking-config, or token-budget acceptance claimed |
+| Production build | Not rerun for this documentation-only change; no new build result claimed |
+
+The automated tests verify the unchanged application baseline. They do not prove that the proposed controls are implemented. The first commit's whitespace issue is corrected by the second; final branch whitespace/status checks are performed before delivery.
+
+## Remaining implementation
+
+All runtime work in the linked checklist remains open. First confirm model access and profile parameters, then implement and test policy, token counting/usage capture, concise contracts, admission/ledger, and UI evidence. Run the production build and authorized live smoke before calling the new policy accepted. Review the model migration schedule before 2027-05-07. Keep further work on a feature branch unless instructed otherwise.

@@ -1,8 +1,11 @@
 # Feature specification: Low-cost AI for Beer Distribution Game
 
-Date: 2026-10-29  
-Branch: `docs/cheap-ai-model-spec`  
-Status: Ready for implementation; no runtime changes in this documentation branch  
+Date: 2026-10-29
+
+Branch: `docs/cheap-ai-model-spec`
+
+Status: Ready for implementation; no runtime changes in this documentation branch
+
 Format: Spec Kit-style specification, plan, and tasks; the Spec Kit CLI is not installed by this change.
 
 ## Request and intended outcome
