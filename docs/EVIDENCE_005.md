@@ -1,6 +1,6 @@
 # Week 05 / Agentic Workflows Evidence
 
-> **Integration update (2026-10-03):** the UI now uses a server-side Gemini adapter for all four workflows. Gemini credentials and live/browser smoke are pending. Updated automated checks: 79 passed, 0 failed; production build passed. See [Gemini integration and setup](WEEK5_GEMINI_INTEGRATION.md). The original mock-only record and unfinished templates below are retained as historical evidence; they do not certify live integration.
+> **Integration update (2026-10-03):** the UI now uses a server-side Gemini adapter for all four workflows. Gemini credentials and live/browser smoke are pending. Updated automated checks: 79 passed, 0 failed; production build passed. See [Gemini integration and setup](guides/WEEK5_GEMINI_INTEGRATION.md). The original mock-only record and unfinished templates below are retained as historical evidence; they do not certify live integration.
 
 > This file documents the actual Week 05 implementation, validation, and final integration as observed in the repository and verified by the executed tests/build. The data below reflects the repository state on 2026-10-03.
 
@@ -51,7 +51,7 @@ Test evidence source:
 - docs/EVIDENCE_005.md
 
 Edge-case specification source:
-- week5/06_HARDENING_TESTS_AND_EVIDENCE.md
+- specs/done-previously/week5/06_HARDENING_TESTS_AND_EVIDENCE.md
 ```
 
 ---
@@ -74,21 +74,21 @@ Files actually changed for the verified Week 05 work:
 - src/agent/scenarioGenerator.test.mjs
 - src/game/gameEngine.ts
 - src/game/gameEngine.test.mjs
-- week5/08_EDGE_AND_IMPOSSIBLE_CASE_TEST_PLAN.md
+- specs/done-previously/week5/08_EDGE_AND_IMPOSSIBLE_CASE_TEST_PLAN.md
 - docs/EVIDENCE_005.md
 
 ### Existing files reused without modification
 
 - src/game/gameConfig.ts
 - src/game/gameEngine.ts
-- week5/00_WORKFLOWS_OVERVIEW.md
-- week5/01_SHARED_AGENT_FOUNDATION.md
-- week5/02_AI_DECISION_COACH.md
-- week5/03_SIMULATE_CANDIDATE_ORDER.md
-- week5/04_POST_GAME_ANALYST.md
-- week5/05_AI_SCENARIO_GENERATOR.md
-- week5/06_HARDENING_TESTS_AND_EVIDENCE.md
-- week5/07_FINAL_INTEGRATION_AND_DEMO.md
+- specs/done-previously/week5/00_WORKFLOWS_OVERVIEW.md
+- specs/done-previously/week5/01_SHARED_AGENT_FOUNDATION.md
+- specs/done-previously/week5/02_AI_DECISION_COACH.md
+- specs/done-previously/week5/03_SIMULATE_CANDIDATE_ORDER.md
+- specs/done-previously/week5/04_POST_GAME_ANALYST.md
+- specs/done-previously/week5/05_AI_SCENARIO_GENERATOR.md
+- specs/done-previously/week5/06_HARDENING_TESTS_AND_EVIDENCE.md
+- specs/done-previously/week5/07_FINAL_INTEGRATION_AND_DEMO.md
 
 ### Game-engine changes
 

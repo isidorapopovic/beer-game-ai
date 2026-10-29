@@ -12,7 +12,7 @@ The current game has no login or user accounts. Use an explicitly supplied pseud
 
 Feature documents: [specification](spec.md), [implementation plan](plan.md), and [tasks](tasks.md).
 
-For development decisions and project progress, see [AI_USAGE_LOG.md](../../docs/AI_USAGE_LOG.md). For proposed token/cost controls, see [the low-cost AI specification](../001-low-cost-ai/spec.md).
+For development decisions and project progress, see [AI_USAGE_LOG.md](../../docs/logs/AI_USAGE_LOG.md). For proposed token/cost controls, see [the low-cost AI specification](../001-low-cost-ai/spec.md).
 
 ## What counts as a call
 

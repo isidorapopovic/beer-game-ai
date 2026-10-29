@@ -21,7 +21,7 @@ Tool Contract source: docs/TOOL_CONTRACT.md
 - `src/aiHint/hintService.ts`
 - `src/aiHint/aiHintFlow.test.mjs`
 - `docs/EVIDENCE_004.md`
-- `docs/AI_USAGE_LOG.md`
+- `docs/logs/AI_USAGE_LOG.md`
 
 No game-engine implementation was modified.
 
