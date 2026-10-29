@@ -60,3 +60,14 @@ The automated tests verify the unchanged application baseline. They do not prove
 ## Remaining implementation
 
 All runtime work in the linked checklist remains open. First confirm model access and profile parameters, then implement and test policy, token counting/usage capture, concise contracts, admission/ledger, and UI evidence. Run the production build and authorized live smoke before calling the new policy accepted. Review the model migration schedule before 2027-05-07. Keep further work on a feature branch unless instructed otherwise.
+
+## Follow-up delivery: AI tool-call log
+
+User request: add a separate Markdown file recording when each user called an AI tool, the input/output, and the tool name.
+
+Commit subject: `docs(ai): add participant tool-call log template` (the hash is available in `git log` and the delivery message).
+
+- Added [AI_TOOL_CALL_LOG.md](AI_TOOL_CALL_LOG.md) with a call index and detailed per-action template: participant/session/run IDs, timestamps, model requests, proposed versus executed tools, exact/redacted inputs and outputs, final response, usage, status, and evidence.
+- Linked it from `AI_USAGE_LOG.md` and documented the absence of accounts and automatic persistence. No past activity was invented; no live calls or fabricated user records were added.
+- This remains a documentation change on `docs/cheap-ai-model-spec`. Automatic capture requires later server work; this file does not claim otherwise.
+- Verification: Markdown relative links and whitespace checked. Application tests were not rerun for this template-only addition; the 79-test baseline above remains the last observed test result. No push or merge performed.

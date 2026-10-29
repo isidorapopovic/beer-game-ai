@@ -2,6 +2,8 @@
 
 # AI Usage Log — Beer Distribution Game
 
+Related log: [AI tool-call log](AI_TOOL_CALL_LOG.md) records the template for participant, timestamp, tool arguments/results, and final AI responses. It is manually maintained; automatic application logging is not implemented.
+
 ## 1. Svrha
 
 Ovaj dokument vodi kratku evidenciju važnih AI poziva tokom Week 3 i Week 4 rada.
