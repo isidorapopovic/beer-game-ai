@@ -1,3 +1,4 @@
+import type { AgentObserver } from "./agentEvents.ts";
 import {
   AGENT_LIMITS,
   BoundedAgentOrchestrator,
@@ -191,11 +192,13 @@ export async function executeScenarioGenerator({
   goal,
   modelStep,
   modelStep2,
+  onEvent,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
+  onEvent?: AgentObserver;
 }): Promise<RunExecutionResult & { finalOutput?: ScenarioSelectionResult }> {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: buildScenarioGeneratorRegistry(),
@@ -212,7 +215,7 @@ export async function executeScenarioGenerator({
     return stoppedPreflightResult(run) as RunExecutionResult & { finalOutput?: ScenarioSelectionResult };
   }
 
-  const result = await orchestrator.executeRun({ run, modelStep, modelStep2 });
+  const result = await orchestrator.executeRun({ run, modelStep, modelStep2, onEvent });
   if (!result.finalOutput) {
     return result as RunExecutionResult & { finalOutput?: ScenarioSelectionResult };
   }

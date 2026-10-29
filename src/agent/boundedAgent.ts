@@ -1,3 +1,4 @@
+import { notifyAgent, type AgentObserver } from "./agentEvents.ts";
 export const AGENT_LIMITS = {
   maxSteps: 2,
   maxToolCalls: 1,
@@ -438,14 +439,27 @@ export class BoundedAgentOrchestrator {
     run,
     modelStep,
     modelStep2,
+    onEvent,
   }: {
     run: AgentRunState;
     modelStep: (state: AgentRunState) => Promise<unknown>;
     modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
+    onEvent?: AgentObserver;
   }): Promise<RunExecutionResult> {
     const providersAttempted: string[] = [];
     const toolsAttempted: string[] = [];
     const validationResults: string[] = [];
+    const emit = (type: string, payload: Record<string, unknown> = {}) =>
+      notifyAgent(onEvent, { type, runId: run.runId, payload });
+    let pendingTool = false;
+    const recordProposal = (value: unknown) => {
+      if (isPlainObject(value) && value.kind === "tool_request") {
+        pendingTool = true;
+        const request = isPlainObject(value.toolRequest) ? value.toolRequest : {};
+        emit("tool_proposed", { name: request.name ?? null, arguments: request.arguments ?? null });
+      }
+    };
+    emit("run_started", { workflow: run.workflow });
 
     if (!run.goal || !run.goal.trim()) {
       const evidence = buildRunEvidence({
@@ -480,6 +494,7 @@ export class BoundedAgentOrchestrator {
     try {
       providersAttempted.push("model");
       const firstResponse = await withinDeadline(modelStep(workingRun), workingRun.deadlineAt);
+      recordProposal(firstResponse);
       const proposal = validateToolProposal(firstResponse);
       workingRun.stepCount += 1;
       validationResults.push("proposal_validated");
@@ -543,6 +558,7 @@ export class BoundedAgentOrchestrator {
       const tool = this.registry[toolName];
 
       if (!tool) {
+        emit("tool_rejected", { name: toolName, arguments: proposal.toolRequest.arguments, reason: "unknown_tool" });
         const evidence = buildRunEvidence({
           run: workingRun,
           status: "stopped",
@@ -572,6 +588,7 @@ export class BoundedAgentOrchestrator {
       }
 
       if (!tool.allowedWorkflows.includes(this.workflow)) {
+        emit("tool_rejected", { name: toolName, arguments: proposal.toolRequest.arguments, reason: "forbidden_tool" });
         const evidence = buildRunEvidence({
           run: workingRun,
           status: "stopped",
@@ -601,6 +618,7 @@ export class BoundedAgentOrchestrator {
       }
 
       if (workingRun.toolCallCount >= this.limits.maxToolCalls) {
+        emit("tool_rejected", { reason: "tool_call_limit" });
         const evidence = buildRunEvidence({
           run: workingRun,
           status: "stopped",
@@ -633,6 +651,7 @@ export class BoundedAgentOrchestrator {
         validateToolArguments(proposal.toolRequest.arguments, tool.argsSchema);
         validationResults.push(`validated_tool_arguments:${toolName}`);
       } catch (error) {
+        emit("tool_rejected", { name: toolName, arguments: proposal.toolRequest.arguments, reason: "invalid_tool_arguments" });
         const message = error instanceof Error ? error.message : "Tool arguments are invalid.";
         const evidence = buildRunEvidence({
           run: workingRun,
@@ -666,13 +685,18 @@ export class BoundedAgentOrchestrator {
       workingRun.recentActions = [...workingRun.recentActions, `tool_request:${toolRequestSignature}`];
 
       let validatedResult: unknown;
+      let toolResult: unknown;
       try {
-        const toolResult = await withinDeadline(
+        pendingTool = false;
+        emit("tool_execution_started", { name: toolName, arguments: proposal.toolRequest.arguments, attempt: 1 });
+        toolResult = await withinDeadline(
           Promise.resolve(tool.execute(proposal.toolRequest.arguments)),
           workingRun.deadlineAt,
         );
         validatedResult = validateToolResult(toolResult, tool.resultSchema);
+        emit("tool_execution_completed", { name: toolName, attempt: 1, result: validatedResult });
       } catch (error) {
+        emit("tool_execution_failed", { name: toolName, attempt: 1, reason: error instanceof DeadlineExceededError ? "deadline" : "invalid_tool_result", resultAvailable: toolResult !== undefined, result: toolResult ?? null });
         const message = error instanceof Error ? error.message : "Tool execution failed.";
         const evidence = buildRunEvidence({
           run: workingRun,
@@ -714,8 +738,10 @@ export class BoundedAgentOrchestrator {
           modelStep2(workingRun, validatedResult),
           workingRun.deadlineAt,
         );
+        recordProposal(secondResponse);
         secondProposal = validateToolProposal(secondResponse);
       } catch (error) {
+        if (pendingTool) emit("tool_rejected", { reason: "invalid_model_proposal" });
         const message = error instanceof Error ? error.message : "Model returned invalid second-step output.";
         const timedOut = error instanceof DeadlineExceededError;
         const status: RunStatus = timedOut ? "stopped" : "failed";
@@ -812,6 +838,7 @@ export class BoundedAgentOrchestrator {
       }
 
       if (secondProposal.kind === "tool_request") {
+        emit("tool_rejected", { name: secondProposal.toolRequest.name, arguments: secondProposal.toolRequest.arguments, reason: "additional_tool_request" });
         if (workingRun.toolCallCount >= this.limits.maxToolCalls) {
           const evidence = buildRunEvidence({
             run: workingRun,
@@ -957,6 +984,7 @@ export class BoundedAgentOrchestrator {
         },
       };
     } catch (error) {
+      if (pendingTool) emit("tool_rejected", { reason: "invalid_model_proposal" });
       const message = error instanceof Error ? error.message : "Agent run failed.";
       const status = error instanceof UnknownToolError || error instanceof DeadlineExceededError ? "stopped" : "failed";
       const reason = error instanceof DeadlineExceededError

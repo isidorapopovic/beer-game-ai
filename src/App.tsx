@@ -9,7 +9,9 @@ import type { CandidateOrderAdviceResult } from "./agent/candidateOrderSimulatio
 import type { DecisionCoachResult } from "./agent/decisionCoach";
 import type { PostGameAnalysisResult } from "./agent/gameAnalyst";
 import { generateScenarioDemand, type ScenarioDifficulty, type ScenarioType, type ScenarioSelectionResult } from "./agent/scenarioGenerator";
-import { requestAgent, type AgentEvidence } from "./agent/agentClient";
+import { requestAgent, AgentRequestError, type ActivityLoggingStatus, type AgentEvidence } from "./agent/agentClient";
+import { AiActivityLogging } from "./agent/AiActivityLogging";
+import { validateParticipantLabel } from "./agent/participantContext";
 import { AiUsageEvidence } from "./agent/AiUsageEvidence";
 
 const currency = new Intl.NumberFormat("en-US", {
@@ -34,6 +36,10 @@ function App() {
   const [gameState, setGameState] = useState<GameState | null>(
     initialization.state,
   );
+  const [participantLabel, setParticipantLabel] = useState("");
+  const [activityLogging, setActivityLogging] = useState<ActivityLoggingStatus | null>(null);
+  let participantError = "";
+  try { validateParticipantLabel(participantLabel); } catch (error) { participantError = error instanceof Error ? error.message : "Invalid participant label."; }
   const [agentEvidence, setAgentEvidence] = useState<AgentEvidence | null>(null);
   const [orderInput, setOrderInput] = useState("");
   const [actionError, setActionError] = useState("");
@@ -74,18 +80,21 @@ function App() {
     const requestedState = gameState;
     setCandidateLoading(true);
     setAgentEvidence(null);
+    setActivityLogging(null);
     setCandidateAdvice(null);
     setCandidateError("");
 
     try {
-      const result = await requestAgent<CandidateOrderAdviceResult>("candidate_order_simulation", requestedState, `Simulate my candidate order: ${orderInput.trim() || requestedState.previousOrder} units. Use that exact quantity.`);
+      const result = await requestAgent<CandidateOrderAdviceResult>("candidate_order_simulation", requestedState, `Simulate my candidate order: ${orderInput.trim() || requestedState.previousOrder} units. Use that exact quantity.`, participantLabel);
       setAgentEvidence(result.evidence);
+      setActivityLogging(result.logging ?? null);
 
       if (result.status !== "completed" || !result.finalOutput) {
         throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setCandidateAdvice(result.finalOutput);
     } catch (error) {
+      if (error instanceof AgentRequestError) setActivityLogging(error.logging ?? null);
       setCandidateError(error instanceof Error ? error.message : "The candidate simulation failed.");
     } finally {
       setCandidateLoading(false);
@@ -100,18 +109,21 @@ function App() {
     const requestedState = gameState;
     setDecisionCoachLoading(true);
     setAgentEvidence(null);
+    setActivityLogging(null);
     setDecisionCoachResult(null);
     setDecisionCoachError("");
 
     try {
-      const result = await requestAgent<DecisionCoachResult>("decision_coach", requestedState, `How much should I order this week and why?`);
+      const result = await requestAgent<DecisionCoachResult>("decision_coach", requestedState, `How much should I order this week and why?`, participantLabel);
       setAgentEvidence(result.evidence);
+      setActivityLogging(result.logging ?? null);
 
       if (result.status !== "completed" || !result.finalOutput) {
         throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setDecisionCoachResult(result.finalOutput);
     } catch (error) {
+      if (error instanceof AgentRequestError) setActivityLogging(error.logging ?? null);
       setDecisionCoachError(error instanceof Error ? error.message : "The decision coach failed.");
     } finally {
       setDecisionCoachLoading(false);
@@ -122,13 +134,15 @@ function App() {
     if (scenarioLoading || (!gameState?.isComplete && gameState?.history.length)) return;
     setScenarioLoading(true);
     setAgentEvidence(null);
+    setActivityLogging(null);
     setScenarioSelection(null);
     setScenarioError("");
 
     try {
       const baseState = createGameState();
-      const result = await requestAgent<ScenarioSelectionResult>("scenario_generator", baseState, `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`);
+      const result = await requestAgent<ScenarioSelectionResult>("scenario_generator", baseState, `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`, participantLabel);
       setAgentEvidence(result.evidence);
+      setActivityLogging(result.logging ?? null);
 
       if (result.status !== "completed" || !result.finalOutput) {
         throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
@@ -136,6 +150,7 @@ function App() {
 
       setScenarioSelection(result.finalOutput);
     } catch (error) {
+      if (error instanceof AgentRequestError) setActivityLogging(error.logging ?? null);
       setScenarioError(error instanceof Error ? error.message : "The scenario generator failed.");
     } finally {
       setScenarioLoading(false);
@@ -162,18 +177,21 @@ function App() {
     const completedState = gameState;
     setAnalysisLoading(true);
     setAgentEvidence(null);
+    setActivityLogging(null);
     setPostGameAnalysis(null);
     setAnalysisError("");
 
     try {
-      const result = await requestAgent<PostGameAnalysisResult>("game_analyst", completedState, `Analyze my completed Beer Game and give evidence-based lessons.`);
+      const result = await requestAgent<PostGameAnalysisResult>("game_analyst", completedState, `Analyze my completed Beer Game and give evidence-based lessons.`, participantLabel);
       setAgentEvidence(result.evidence);
+      setActivityLogging(result.logging ?? null);
 
       if (result.status !== "completed" || !result.finalOutput) {
         throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setPostGameAnalysis(result.finalOutput);
     } catch (error) {
+      if (error instanceof AgentRequestError) setActivityLogging(error.logging ?? null);
       setAnalysisError(error instanceof Error ? error.message : "The game analysis failed.");
     } finally {
       setAnalysisLoading(false);
@@ -249,6 +267,15 @@ function App() {
         <span className="week-status">
           {isComplete ? "Complete" : "In progress"}
         </span>
+      </section>
+
+      <section className="scenario-panel" aria-label="AI activity participant">
+        <label htmlFor="participant-label">Optional participant label</label>
+        <input id="participant-label" type="text" value={participantLabel} autoComplete="off"
+          onChange={event => setParticipantLabel(event.target.value)} aria-invalid={Boolean(participantError)}
+          aria-describedby="participant-help" disabled={aiBusy} />
+        <p id="participant-help">Use a nickname and avoid personal details. Anonymous sessions and labels are unverified.</p>
+        {participantError && <p className="inline-error" role="alert">{participantError}</p>}
       </section>
 
       <section className="dashboard-grid" aria-label="Current game state">
@@ -575,6 +602,7 @@ function App() {
       )}
 
       {agentEvidence && <AiUsageEvidence evidence={agentEvidence} />}
+      {activityLogging && <AiActivityLogging logging={activityLogging} />}
       <footer className="footer-line">
         <span>Retailer</span>
         <span>Week {gameState.currentWeek} of {gameState.config.totalWeeks}</span>

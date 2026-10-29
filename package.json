@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "agent:dev": "node --env-file-if-exists=.env server/index.mjs",
     "test:live": "node --env-file-if-exists=.env server/liveSmoke.mjs",
-    "test:ui": "node server/uiSmoke.mjs"
+    "test:ui": "node server/uiSmoke.mjs",
+    "logs:export": "node server/exportAiToolCallLog.mjs",
+    "test:logging": "node server/loggingSmoke.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

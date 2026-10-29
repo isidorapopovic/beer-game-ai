@@ -1,3 +1,4 @@
+import type { AgentObserver } from "./agentEvents.ts";
 import { BoundedAgentOrchestrator, AGENT_LIMITS, type AgentRunState, type RunExecutionResult, type StopReason, type ToolDescriptor, type WorkflowId } from "./boundedAgent.ts";
 import type { GameState } from "../game/gameEngine.ts";
 import { boundedText, boundedItems } from "./aiLimits.ts";
@@ -181,11 +182,13 @@ export async function executeDecisionCoach({
   goal,
   modelStep,
   modelStep2,
+  onEvent,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
+  onEvent?: AgentObserver;
 }): Promise<RunExecutionResult & { finalOutput?: DecisionCoachResult }> {
   if (state.isComplete) {
     const run = { 
@@ -225,6 +228,7 @@ export async function executeDecisionCoach({
 
   const runResult = await orchestrator.executeRun({
     run,
+    onEvent,
     modelStep: async (currentRun) => {
       const result = await modelStep(currentRun);
       if (result && typeof result === "object" && "kind" in (result as Record<string, unknown>)) {

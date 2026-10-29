@@ -1,5 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { validateGoal } from '../src/agent/aiLimits.ts';
+import { validateParticipant } from '../src/agent/participantContext.ts';
+import { notifyAgent } from '../src/agent/agentEvents.ts';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
 import { executeDecisionCoach } from '../src/agent/decisionCoach.ts';
 import { executeCandidateOrderSimulation } from '../src/agent/candidateOrderSimulation.ts';
@@ -15,10 +17,11 @@ const workflows = {
 
 export function validateRequest(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)
-    || Object.keys(input).some(key => !['workflow', 'goal', 'state'].includes(key))) throw new Error('Invalid request fields.');
+    || Object.keys(input).some(key => !['workflow', 'goal', 'state', 'participant'].includes(key))) throw new Error('Invalid request fields.');
   if (!input || !Object.hasOwn(workflows, input.workflow)
     || typeof input.goal !== 'string') throw new Error('Invalid workflow request.');
   const goal = validateGoal(input.goal);
+  const participant = validateParticipant(input.participant);
   const state = input.state;
   if (!state || !Array.isArray(state.demandSequence) || state.demandSequence.length !== 10
     || state.demandSequence.some(n => !Number.isInteger(n) || n < 0 || n > 100)
@@ -29,10 +32,10 @@ export function validateRequest(input) {
     canonical = submitOrder(canonical, week.order);
   }
   if (!isDeepStrictEqual(canonical, state)) throw new Error('Game state does not match canonical game rules.');
-  return { workflow: input.workflow, goal, state: canonical };
+  return { workflow: input.workflow, goal, state: canonical, participant };
 }
 
-export async function runWorkflow(input, modelStep) {
+export async function runWorkflow(input, modelStep, { onEvent } = {}) {
   const { state, workflow, goal } = validateRequest(input);
   const [execute, toolName, contract] = workflows[workflow];
   let modelCalls = 0;
@@ -52,16 +55,20 @@ export async function runWorkflow(input, modelStep) {
     if (toolResult === undefined && proposal?.kind === 'final') return { kind: 'premature_final' };
     return proposal;
   };
-  const result = await execute({ state, goal, modelStep: run => call(run), modelStep2: call });
+  const result = await execute({ state, goal, modelStep: run => call(run), modelStep2: call, onEvent });
   const providerEvidence = modelStep.getEvidence?.();
   const timedOut = providerEvidence?.failureCode === 'deadline';
-  const status = timedOut ? 'stopped' : result.status;
-  const stopReason = timedOut ? 'deadline' : result.stopReason;
+  const cancelled = providerEvidence?.failureCode === 'cancelled';
+  const status = timedOut || cancelled ? 'stopped' : result.status;
+  const stopReason = timedOut ? 'deadline' : cancelled ? 'cancelled' : result.stopReason;
+  notifyAgent(onEvent, { type: 'workflow_finished', runId: result.runId,
+    payload: { status, stopReason, finalValidation: status === 'completed' ? 'passed' : result.stopReason === 'invalid_final_result' ? 'rejected' : 'not_completed' } });
   const safeReasons = new Set(['completed','preflight_rejected','invalid_model_proposal','unknown_tool','invalid_tool_arguments','invalid_tool_result','tool_failed','provider_failed','step_limit','tool_call_limit','deadline','repeated_action','cancelled','invalid_final_result']);
   return {
     status, stopReason: safeReasons.has(stopReason) ? stopReason : 'provider_failed',
     error: providerEvidence?.failureCode ? ({ input_token_limit: 'AI prompt exceeds its token budget. Shorten the request.',
       output_token_limit: 'The AI response reached its token limit. No retry was made.', deadline: 'AI run deadline reached.',
+      cancelled: 'AI request was cancelled.',
       provider_failed: 'Gemini request failed. Check the configured model and account access.' }[providerEvidence.failureCode]
       || 'AI could not return a valid bounded response. No retry was made.') : undefined,
     finalOutput: result.status === 'completed' ? result.finalOutput : undefined,

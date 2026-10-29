@@ -1,3 +1,4 @@
+import type { AgentObserver } from "./agentEvents.ts";
 import {
   AGENT_LIMITS,
   BoundedAgentOrchestrator,
@@ -170,11 +171,13 @@ export async function executeCandidateOrderSimulation({
   goal,
   modelStep,
   modelStep2,
+  onEvent,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
+  onEvent?: AgentObserver;
 }): Promise<RunExecutionResult & { finalOutput?: CandidateOrderAdviceResult }> {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: buildCandidateOrderRegistry(state),
@@ -201,6 +204,7 @@ export async function executeCandidateOrderSimulation({
 
   const result = await orchestrator.executeRun({
     run,
+    onEvent,
     modelStep,
     modelStep2,
   });

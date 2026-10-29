@@ -1,3 +1,4 @@
+import type { AgentObserver } from "./agentEvents.ts";
 import {
   AGENT_LIMITS,
   BoundedAgentOrchestrator,
@@ -296,11 +297,13 @@ export async function executeGameAnalyst({
   goal,
   modelStep,
   modelStep2,
+  onEvent,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
+  onEvent?: AgentObserver;
 }): Promise<RunExecutionResult & { finalOutput?: PostGameAnalysisResult }> {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: buildGameAnalystRegistry(state),
@@ -319,7 +322,7 @@ export async function executeGameAnalyst({
     return stoppedPreflightResult(run) as RunExecutionResult & { finalOutput?: PostGameAnalysisResult };
   }
 
-  const result = await orchestrator.executeRun({ run, modelStep, modelStep2 });
+  const result = await orchestrator.executeRun({ run, modelStep, modelStep2, onEvent });
   if (!result.finalOutput) {
     return result as RunExecutionResult & { finalOutput?: PostGameAnalysisResult };
   }

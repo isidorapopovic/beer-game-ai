@@ -25,11 +25,14 @@ export async function readBoundedJson(response, signal) {
   } finally { signal.removeEventListener('abort', cancel); reader.releaseLock(); }
 }
 
-export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = fetch, now = Date.now }) {
+export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = fetch, now = Date.now, onEvent, abortSignal }) {
   if (!apiKey || !Object.hasOwn(MODEL_PROFILES, model)) {
     throw new AiPolicyError('CONFIGURATION', 'Configure a Gemini API key and the supported gemini-3.1-flash-lite model.');
   }
   const profile = MODEL_PROFILES[model];
+  const emit = (type, payload) => {
+    try { const result = onEvent?.(type, payload); if (result) void Promise.resolve(result).catch(() => {}); } catch { /* Observability cannot alter a provider call. */ }
+  };
   const calls = [];
   let countTokenCalls = 0; let generationCalls = 0; let busy = false; let failureCode;
   const step = async ({ instructions, input, deadlineAt, workflow = 'decision_coach', stage = 'proposal' }) => {
@@ -48,7 +51,8 @@ export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = f
       busy = false; failureCode = 'deadline'; record.status = 'failed';
       throw new AiPolicyError('deadline', 'AI run deadline reached.');
     }
-    const signal = AbortSignal.timeout(Math.ceil(remaining));
+    const timeoutSignal = AbortSignal.timeout(Math.ceil(remaining));
+    const signal = abortSignal ? AbortSignal.any([timeoutSignal, abortSignal]) : timeoutSignal;
     const body = {
       systemInstruction: { parts: [{ text: instructions }] },
       contents: [{ role: 'user', parts: [{ text: JSON.stringify(input) }] }],
@@ -58,7 +62,12 @@ export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = f
     };
     const request = async (method, payload) => {
       signal.throwIfAborted();
+      const prefix = method === 'countTokens' ? 'count_tokens_request' : 'model_request';
+      const started = performance.now();
+      emit(prefix + '_started', { model, stage, inputTokenLimit: budget.input, outputTokenLimit: budget.output,
+        ...(method === 'generateContent' ? { systemInstructions: instructions, input } : {}) });
       let response;
+      try {
       try {
         response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${model}:${method}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
@@ -70,8 +79,22 @@ export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = f
         void response.body?.cancel().catch(() => {});
         throw new AiPolicyError('provider_failed', 'Gemini could not complete the request. Check model access and configuration; no retry was made.');
       }
-      return readBoundedJson(response, signal);
+      const data = await readBoundedJson(response, signal);
+      emit(prefix + '_completed', { model, stage, elapsedMs: Math.round(performance.now() - started),
+        httpStatus: response.status,
+        ...(method === 'countTokens' ? { countedInputTokens: integer(data.totalTokens) ? data.totalTokens : null }
+          : { actualModel: typeof data.modelVersion === 'string' && /^[\w.-]{1,120}$/.test(data.modelVersion) ? data.modelVersion : null,
+            usage: Object.fromEntries(usageKeys.map(key => [key, integer(data.usageMetadata?.[key]) ? data.usageMetadata[key] : null])) }) });
+      return data;
+      } catch (error) {
+        emit(prefix + '_failed', { model, stage, elapsedMs: Math.round(performance.now() - started),
+          httpStatus: response?.status ?? null,
+          reason: signal.aborted ? (abortSignal?.aborted ? 'cancelled' : 'deadline')
+            : error instanceof AiPolicyError ? error.code : 'invalid_provider_response' });
+        throw error;
+      }
     };
+    let receivedBody = false;
     try {
       countTokenCalls++;
       const counted = await request('countTokens', { generateContentRequest: { model: `models/${model}`, ...body } });
@@ -83,6 +106,7 @@ export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = f
       signal.throwIfAborted();
       generationCalls++; record.generated = true;
       const data = await request('generateContent', body);
+      receivedBody = true;
       // Keep usage even when final content or finish reason is rejected.
       for (const key of usageKeys) {
         if (integer(data.usageMetadata?.[key])) record.usage[key] = data.usageMetadata[key];
@@ -107,11 +131,13 @@ export function createGeminiModel({ apiKey, model = DEFAULT_MODEL, fetchImpl = f
       const text = candidate.content?.parts?.filter(part => !part.thought && typeof part.text === 'string').map(part => part.text).join('');
       if (!text || Buffer.byteLength(text) > JSON_TEXT_BYTES) throw new Error('Invalid output size.');
       const result = JSON.parse(text);
+      emit('model_output_validated', { model, stage, scope: 'json_only', workflowFinalValidated: false });
       record.status = 'completed'; return result;
     } catch (error) {
       record.status = 'failed';
-      failureCode = signal.aborted ? 'deadline' : error instanceof AiPolicyError ? error.code : 'invalid_provider_response';
-      throw new AiPolicyError(failureCode, signal.aborted ? 'AI run deadline reached.'
+      failureCode = signal.aborted ? (abortSignal?.aborted ? 'cancelled' : 'deadline') : error instanceof AiPolicyError ? error.code : 'invalid_provider_response';
+      if (receivedBody) emit('model_output_rejected', { model, stage, scope: 'json_only', reason: failureCode });
+      throw new AiPolicyError(failureCode, failureCode === 'cancelled' ? 'AI request was cancelled.' : signal.aborted ? 'AI run deadline reached.'
         : error instanceof AiPolicyError ? error.message : 'Gemini did not return a valid bounded response.');
     } finally { busy = false; }
   };
