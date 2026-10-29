@@ -2,9 +2,11 @@
 
 Specification: [spec.md](spec.md)
 
-Status: Planned, not implemented
+Status: Runtime implementation and local verification complete; live/browser acceptance pending in [evidence.md](evidence.md).
 
 Starting code: `46341d6` on `feature/week5-bounded-agent-workflows`
+
+Execution started from the reviewed documentation at `87c1031`, on new branch `feature/001-low-cost-ai`. Runtime changes and their tests were consolidated into commit `6dfc5b9` so the adapter, HTTP endpoint, contracts, and UI evidence stayed compatible together. The six commit subjects below remain the original proposed breakdown; they are not six additional commits. The following evidence/documentation commit records the actual results and outstanding acceptance checks.
 
 ## Approach
 

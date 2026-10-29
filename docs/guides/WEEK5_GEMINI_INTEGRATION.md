@@ -1,5 +1,7 @@
 # Week 5 Gemini integration
 
+Feature 001 update (2026-10-29): the current implementation adds a pinned low-cost model, prompt counting, response/usage limits, persistent admission/spending controls, and UI usage evidence. Use [Low-cost AI setup](LOW_COST_AI.md) for current configuration and [feature 001 evidence](../../specs/001-low-cost-ai/evidence.md) for actual test/live results. The October 3 limits and NOT RUN statements below are the historical Week 5 baseline, not the current feature status.
+
 Implemented on 2026-10-03. All four Week 5 UI actions now call a server endpoint rather than hardcoded model callbacks. Gemini credentials are deliberately not configured yet. No live acceptance or browser smoke is claimed.
 
 ## Run locally

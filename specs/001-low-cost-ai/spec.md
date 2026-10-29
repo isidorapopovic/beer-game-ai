@@ -2,9 +2,9 @@
 
 Date: 2026-10-29
 
-Branch: `docs/cheap-ai-model-spec`
+Implementation branch: `feature/001-low-cost-ai`
 
-Status: Ready for implementation; no runtime changes in this documentation branch
+Status: Implemented and verified locally; full live/browser acceptance pending. See [execution evidence](evidence.md).
 
 Format: Spec Kit-style specification, plan, and tasks; the Spec Kit CLI is not installed by this change.
 

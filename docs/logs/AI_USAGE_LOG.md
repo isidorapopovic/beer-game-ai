@@ -28,6 +28,8 @@ Ako to nije jasno, sledeći korak treba da bude analiza ili lokalni test, a ne n
 
 # 2. Evidencija
 
+Feature 001 execution (2026-10-29): implemented the reviewed low-cost AI policy on `feature/001-low-cost-ai`, preserving private configuration and game mechanics. Local verification: 110 automated tests, typecheck, rendered UI smoke, and production build passed. Live coaching and candidate simulation succeeded in separate runs; analysis/scenario acceptance remains incomplete because of upstream failures/timeouts and a rejected analysis result. Detailed observed evidence and later updates are in [feature 001 evidence](../../specs/001-low-cost-ai/evidence.md). No push or merge to `main`.
+
 | # | Faza | Zašto je AI pozvan | Šta se očekivalo | Rezultat | Sledeća odluka |
 |---:|---|---|---|---|---|
 | 1 | Week 3 / Spec | Strukturisati Build Prompt za Retailer MVP | Jasan scope, gameplay pravila, DoD i zabrane | Kreiran `BUILD_PROMPT_V1.md` | Definisati context paket |

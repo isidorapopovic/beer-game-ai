@@ -1,0 +1,253 @@
+{
+  "mode": "live",
+  "records": [
+    {
+      "at": "2026-10-29T18:11:39.151Z",
+      "mode": "live",
+      "workflow": "decision_coach",
+      "goal": "Recommend an order for this week.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "AI could not return a valid bounded response. No retry was made.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_7b59f914-1603-4249-a3cc-84cea953d755",
+        "workflow": "decision_coach",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 0,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 1,
+        "failureCode": "invalid_provider_response",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": null,
+            "generated": false,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null
+          }
+        ],
+        "modelCalls": 0,
+        "elapsedMs": 48,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.001408,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T18:11:39.181Z",
+      "mode": "live",
+      "workflow": "candidate_order_simulation",
+      "goal": "Simulate exactly 9 units and explain shipment timing.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "AI could not return a valid bounded response. No retry was made.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_72323e61-3ce8-4c1a-922d-6435e1841805",
+        "workflow": "candidate_order_simulation",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 0,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 1,
+        "failureCode": "invalid_provider_response",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": null,
+            "generated": false,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null
+          }
+        ],
+        "modelCalls": 0,
+        "elapsedMs": 10,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.0016,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T18:11:39.199Z",
+      "mode": "live",
+      "workflow": "game_analyst",
+      "goal": "Analyze my completed game using exact verified facts.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "AI could not return a valid bounded response. No retry was made.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_1816f9d0-633b-4486-b716-0124eabd2bca",
+        "workflow": "game_analyst",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 0,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 1,
+        "failureCode": "invalid_provider_response",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": null,
+            "generated": false,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null
+          }
+        ],
+        "modelCalls": 0,
+        "elapsedMs": 5,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.002688,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T18:11:39.214Z",
+      "mode": "live",
+      "workflow": "scenario_generator",
+      "goal": "Select a hard growth scenario.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "AI could not return a valid bounded response. No retry was made.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_58469343-e171-464a-a01a-2a2091786bce",
+        "workflow": "scenario_generator",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 0,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 1,
+        "failureCode": "invalid_provider_response",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": null,
+            "generated": false,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null
+          }
+        ],
+        "modelCalls": 0,
+        "elapsedMs": 4,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.001216,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    }
+  ]
+}

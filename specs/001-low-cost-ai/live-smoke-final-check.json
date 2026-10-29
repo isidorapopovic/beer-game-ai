@@ -1,0 +1,172 @@
+{
+  "mode": "live",
+  "records": [
+    {
+      "at": "2026-10-29T18:23:29.053Z",
+      "mode": "live",
+      "workflow": "game_analyst",
+      "goal": "Analyze my completed game using exact verified facts.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "Gemini request failed. Check the configured model and account access.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_51f43130-8a1e-4f7b-aa1b-09290dd78225",
+        "workflow": "game_analyst",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 1,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 2,
+        "failureCode": "provider_failed",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": 87,
+            "generated": true,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              },
+              {
+                "method": "generateContent",
+                "status": 503
+              }
+            ]
+          }
+        ],
+        "modelCalls": 1,
+        "elapsedMs": 2153,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.002688,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T18:23:49.088Z",
+      "mode": "live",
+      "workflow": "scenario_generator",
+      "goal": "Select a hard growth scenario.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "stopped",
+      "error": "AI run deadline reached.",
+      "stopReason": "deadline",
+      "evidence": {
+        "runId": "run_c7aacc1b-aa4e-40d6-9e03-ed50a0ac0340",
+        "workflow": "scenario_generator",
+        "status": "stopped",
+        "provider": "gemini",
+        "stepCount": 2,
+        "toolCallCount": 1,
+        "stopReason": "deadline",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 2,
+        "countTokenCalls": 2,
+        "providerHttpCalls": 4,
+        "failureCode": "deadline",
+        "usage": {
+          "promptTokenCount": 85,
+          "candidatesTokenCount": 40,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": 125
+        },
+        "usageStatus": "partial",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": 0.00008125,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": 85,
+            "generated": true,
+            "status": "completed",
+            "modelVersion": "gemini-3.1-flash-lite",
+            "usage": {
+              "promptTokenCount": 85,
+              "candidatesTokenCount": 40,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": 125
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              },
+              {
+                "method": "generateContent",
+                "status": 200
+              }
+            ]
+          },
+          {
+            "stage": "final",
+            "inputTokenLimit": 1024,
+            "outputTokenLimit": 384,
+            "countedInputTokens": 272,
+            "generated": true,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              }
+            ]
+          }
+        ],
+        "modelCalls": 2,
+        "elapsedMs": 20012,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.001216,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    }
+  ]
+}

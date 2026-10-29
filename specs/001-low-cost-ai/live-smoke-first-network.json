@@ -1,0 +1,211 @@
+{
+  "mode": "live",
+  "records": [
+    {
+      "at": "2026-10-29T18:12:17.875Z",
+      "mode": "live",
+      "workflow": "decision_coach",
+      "goal": "Recommend an order for this week.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "completed",
+      "stopReason": "completed",
+      "evidence": {
+        "runId": "run_fea7ba12-2187-4baa-9955-037f68d3a62d",
+        "workflow": "decision_coach",
+        "status": "completed",
+        "provider": "gemini",
+        "stepCount": 2,
+        "toolCallCount": 1,
+        "stopReason": "completed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 2,
+        "countTokenCalls": 2,
+        "providerHttpCalls": 4,
+        "usage": {
+          "promptTokenCount": 278,
+          "candidatesTokenCount": 239,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": 517
+        },
+        "usageStatus": "partial",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": 84,
+            "generated": true,
+            "status": "completed",
+            "modelVersion": "gemini-3.1-flash-lite",
+            "usage": {
+              "promptTokenCount": 84,
+              "candidatesTokenCount": 38,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": 122
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              },
+              {
+                "method": "generateContent",
+                "status": 200
+              }
+            ]
+          },
+          {
+            "stage": "final",
+            "inputTokenLimit": 1024,
+            "outputTokenLimit": 512,
+            "countedInputTokens": 194,
+            "generated": true,
+            "status": "completed",
+            "modelVersion": "gemini-3.1-flash-lite",
+            "usage": {
+              "promptTokenCount": 194,
+              "candidatesTokenCount": 201,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": 395
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              },
+              {
+                "method": "generateContent",
+                "status": 200
+              }
+            ]
+          }
+        ],
+        "modelCalls": 2,
+        "elapsedMs": 3361,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.001408,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      },
+      "finalOutput": {
+        "summary": "Week 1 analysis shows steady demand of 4 units with 12 units in stock. Given the two-week shipping delay, proactive replenishment is necessary to avoid stockouts.",
+        "recommendation": "Order 8 units to maintain a safety buffer while accounting for the two-week lead time and current consumption rates.",
+        "recommendedOrderQuantity": 8,
+        "evidence": [
+          {
+            "source": "game_state",
+            "fact": "Current inventory is 12 units with a recent demand of 4 units per week."
+          },
+          {
+            "source": "game_state",
+            "fact": "The game mechanics impose a two-week shipping delay on all orders."
+          }
+        ],
+        "confidence": "high",
+        "completed": true
+      }
+    },
+    {
+      "at": "2026-10-29T18:12:18.507Z",
+      "mode": "live",
+      "workflow": "candidate_order_simulation",
+      "goal": "Simulate exactly 9 units and explain shipment timing.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 200,
+      "status": "failed",
+      "error": "Gemini request failed. Check the configured model and account access.",
+      "stopReason": "provider_failed",
+      "evidence": {
+        "runId": "run_95e95192-3b62-4e0a-ae78-72f2a23ce915",
+        "workflow": "candidate_order_simulation",
+        "status": "failed",
+        "provider": "gemini",
+        "stepCount": 0,
+        "toolCallCount": 0,
+        "stopReason": "provider_failed",
+        "model": "gemini-3.1-flash-lite",
+        "priceDate": "2026-10-29",
+        "generationCalls": 1,
+        "countTokenCalls": 1,
+        "providerHttpCalls": 2,
+        "failureCode": "provider_failed",
+        "usage": {
+          "promptTokenCount": null,
+          "candidatesTokenCount": null,
+          "thoughtsTokenCount": null,
+          "totalTokenCount": null
+        },
+        "usageStatus": "unknown",
+        "estimatedUsd": null,
+        "knownEstimatedUsd": null,
+        "calls": [
+          {
+            "stage": "proposal",
+            "inputTokenLimit": 768,
+            "outputTokenLimit": 128,
+            "countedInputTokens": 99,
+            "generated": true,
+            "status": "failed",
+            "modelVersion": null,
+            "usage": {
+              "promptTokenCount": null,
+              "candidatesTokenCount": null,
+              "thoughtsTokenCount": null,
+              "totalTokenCount": null
+            },
+            "complete": false,
+            "estimatedUsd": null,
+            "httpStatuses": [
+              {
+                "method": "countTokens",
+                "status": 200
+              },
+              {
+                "method": "generateContent",
+                "status": 503
+              }
+            ]
+          }
+        ],
+        "modelCalls": 1,
+        "elapsedMs": 575,
+        "accounting": {
+          "reservationStatus": "reserved",
+          "chargedEstimateUsd": 0.0016,
+          "dailyAllowanceUsd": 1,
+          "reconciliationVerified": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-29T18:12:18.517Z",
+      "mode": "live",
+      "workflow": "game_analyst",
+      "goal": "Analyze my completed game using exact verified facts.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 429,
+      "status": "failed",
+      "error": "AI request limit reached. Wait before asking again."
+    },
+    {
+      "at": "2026-10-29T18:12:18.525Z",
+      "mode": "live",
+      "workflow": "scenario_generator",
+      "goal": "Select a hard growth scenario.",
+      "model": "gemini-3.1-flash-lite",
+      "httpStatus": 429,
+      "status": "failed",
+      "error": "AI request limit reached. Wait before asking again."
+    }
+  ]
+}

@@ -15,6 +15,7 @@ These documents describe their original scope and verification dates. Consult th
 ## Supporting records
 
 - [Guides: Gemini integration and local setup](guides/WEEK5_GEMINI_INTEGRATION.md)
+- [Guides: low-cost AI configuration and limits](guides/LOW_COST_AI.md)
 - [Logs: AI development usage](logs/AI_USAGE_LOG.md)
 - [Reports: Week 3](reports/WEEK_3_REPORT.md)
 - [Reports: low-cost AI specification and commit history](reports/LOW_COST_AI_SPEC_REPORT.md)

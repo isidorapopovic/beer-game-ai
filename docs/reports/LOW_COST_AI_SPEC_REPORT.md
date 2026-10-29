@@ -94,3 +94,14 @@ Commit subject: `docs: require execution evidence for features 001 and 002` (has
 - Updated both specifications, plans, task checklists, and the specs index to require evidence in the same folder after each implementation session and before marking tasks complete.
 - All feature execution results remain NOT RUN. No runtime implementation, new test result, or live acceptance is claimed. Documentation links, task coverage, and whitespace were checked; application tests were not repeated for this documentation-only addition.
 - Work remains on the existing local feature branch; no push or merge to `main`.
+
+## Feature 001 runtime execution — 2026-10-29
+
+Implementation moved to new branch `feature/001-low-cost-ai` from reviewed documentation commit `87c1031`.
+
+- `6dfc5b9` — `feat(ai): implement low-cost Gemini budgets and usage controls`: one supported cheap model, exact token preflight, small output/field limits, token and partial-cost evidence, persistent quota/spending reservations, HTTP/UI updates, regression fixes, and deterministic/live/rendered smoke tooling. The tightly coupled endpoint/adapter/contracts/UI changes were kept compatible in one runtime commit rather than the six originally proposed commits.
+- `docs(ai): record spec 001 implementation and live limitations`: records the original live artifacts and actual task/acceptance results, updates configuration guidance, and leaves T022 unchecked. Exact hash is available in `git log` and the delivery message.
+
+Final local results: 110 tests passed, 0 failed/skipped; typecheck, rendered UI smoke, and production build passed. Live coaching and candidate simulation succeeded in separate runs. Analyst/scenario verification remains incomplete because of timeouts/upstream 503s and a rejected analysis result. The browser automation host was unavailable. No automatic retries, cap expansion, model upgrade, private `.env` edit, or reconciliation of unknown usage was used to hide failures.
+
+Full evidence and follow-up are in [spec 001 evidence](../../specs/001-low-cost-ai/evidence.md); current operations are in [the setup guide](../guides/LOW_COST_AI.md). Spec 002 is not implemented. Nothing was pushed or merged; `main` remains unchanged.
