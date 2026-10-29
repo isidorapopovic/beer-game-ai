@@ -7,8 +7,10 @@ in [review.md](review.md); that review remains an unchanged historical record.
 
 **Local implementation and deterministic checks pass. Browser acceptance is
 pending.** Eighteen tasks are complete; T017's source change is implemented but its
-required browser interaction is unverified. No new commit, push, merge, live API
-call, private configuration edit, or production-state/ledger change was made.
+required browser interaction is unverified. The original verification session made
+no commit or merge. A subsequent user-authorized commit and local-main merge are
+recorded below. No push, live API call, private configuration edit, or
+production-state/ledger change was made.
 
 ## What changed
 
@@ -120,7 +122,7 @@ Only sanitized aggregate/test-case results are versioned.
 | T016 | PASS | M6 HTTP repeat/change-label/global quota, concurrent A/B isolation, cancel/reissue and failed/phase admissions; inherited restart/daily tests retained |
 | T017 | **PARTIAL / OPEN** | Source clears stale advice after successful progression; invalid submission preserves it by code path. Actual mocked browser interaction blocked by browser host/app approval availability |
 | T018 | PASS, stated limit | 446 tests, typecheck, rendered UI, build, logging/export; pending browser and live limits explicitly recorded |
-| T019 | PASS | This report, docs entry, coverage, verification JSON, smoke result, checklist and indexes; no implementation commit created |
+| T019 | PASS | This report, docs entry, coverage, verification JSON, smoke result, checklist and indexes; implementation commit `f887018`; local-main delivery recorded below |
 
 ## Monitoring semantics and four-workflow smoke
 
@@ -181,8 +183,33 @@ Spec 001 T022 and prior live analyst/scenario acceptance remain untouched. No li
 model call was used to fill an evidence gap. No agent, account, provider, dependency,
 dashboard, database, billing change or new gameplay rule was added.
 
-Git recorded no new implementation commit in this execution. All changes are
-reviewable in the working tree on the feature branch; `main` was neither checked
-out nor merged/pushed. The initial branch-creation attempt was blocked by the
-filesystem sandbox; the approved local branch operation then succeeded. No
-automatic-approval rejection remains unresolved.
+The initial implementation was left uncommitted on its feature branch. The
+initial branch-creation attempt was blocked by the filesystem sandbox; the approved
+local branch operation then succeeded. No automatic-approval rejection remains
+unresolved.
+
+## User-authorized commit and local-main delivery ? 2026-10-29
+
+The user subsequently requested committing and merging to `main`.
+
+| Commit | Contents |
+|---|---|
+| `f887018` | Spec 003 implementation, tests, coverage and execution evidence; 32 files |
+| `fd26a7d` | Four supplied W08 course documents under `specs/004-secure-game`; content preserved, no W08 implementation |
+| Delivery-documentation commit | Updated this report, docs evidence and verification metadata after the successful merge; exact hash is in Git history |
+
+Executed `git add` with explicit project paths, inspected the staged file lists,
+and created the two commits above. `.env` and `.local/` remained ignored and were
+not staged. Existing two-space Markdown line breaks in supplied W08 materials
+were preserved; Git's whitespace check reports those five original lines.
+
+Executed `git switch main`, then
+`git merge --ff-only feature/003-workflow-boundary-validation`. It succeeded without
+conflicts, moving local main from `e69ece4` to `fd26a7d`. This also brought the older
+completed commits already on the feature ancestry into main. No history was
+rewritten and no remote push was requested or performed.
+
+The final delivery-documentation commit contains no runtime changes. Prior
+verification remains 446 passing tests plus typecheck, rendered UI, production
+build and mock logging/export; these were not rerun solely for the Git pointer and
+documentation changes. T017 browser acceptance and spec 001 T022 remain open.

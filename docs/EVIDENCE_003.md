@@ -3,9 +3,11 @@
 Date: 2026-10-29. This is feature 003, separate from the historical Week 4/5
 evidence files in this directory.
 
-Implemented on local branch `feature/003-workflow-boundary-validation`, based on
-`5a48e72`. No push or merge; `main` is unchanged. Runtime changes are in the working
-tree; no new implementation commit has been created.
+Implemented in commit `f887018`, based on `5a48e72`, on branch
+`feature/003-workflow-boundary-validation`. On 2026-10-29, the user requested a
+commit and merge to local `main`. A fast-forward merge through `fd26a7d` included
+the implementation and a separate W08-materials commit. Nothing was pushed. See
+the delivery record in the detailed execution evidence.
 
 The implementation fixes coach order/demand projection, legal-order replay,
 explicit candidate/scenario selection, deterministic structured facts, prototype

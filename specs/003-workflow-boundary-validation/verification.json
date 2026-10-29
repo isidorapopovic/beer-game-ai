@@ -5,10 +5,10 @@
   "recordedAt": "2026-10-29T21:51:35.013Z",
   "baseCommit": "5a48e72",
   "branch": "feature/003-workflow-boundary-validation",
-  "implementationCommit": null,
+  "implementationCommit": "f887018",
   "pushed": false,
-  "merged": false,
-  "mainUnchanged": true,
+  "merged": true,
+  "mainUnchanged": false,
   "actualLiveProviderCalls": 0,
   "tasks": {
     "complete": [
@@ -677,5 +677,19 @@
     "Browser interaction pending",
     "Spec 001 T022 remains separate",
     "Unverified identities/local records do not prove provenance or immutability"
-  ]
+  ],
+  "delivery": {
+    "date": "2026-10-29",
+    "userAuthorized": true,
+    "currentBranch": "main",
+    "mainBefore": "e69ece4",
+    "mergedFeatureTip": "fd26a7d",
+    "method": "fast-forward",
+    "implementationCommit": "f887018",
+    "courseMaterialsCommit": "fd26a7d",
+    "pushed": false,
+    "runtimeChangedSinceVerification": false,
+    "testsRerunForGitOnlyChanges": false,
+    "note": "Delivery documentation committed separately; exact hash in Git history. T017 remains pending."
+  }
 }
