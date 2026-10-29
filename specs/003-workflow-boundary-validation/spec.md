@@ -4,9 +4,9 @@ Feature: 003
 
 Date: 2026-10-29
 
-Branch: `docs/003-boundary-validation-plan`
+Branch: `feature/003-workflow-boundary-validation` (planning baseline: `5a48e72`)
 
-Status: Analysis/planning only. All implementation tasks remain open.
+Status: Implemented with local deterministic verification on 2026-10-29; browser acceptance for T017 remains pending. See [execution evidence](evidence.md). The review remains the historical pre-implementation analysis.
 
 Basis: [review.md](review.md), including current code references, baseline checks, and isolated probes at revision `742d31a`. Read the review before implementing this specification.
 

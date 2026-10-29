@@ -59,11 +59,12 @@ export function createAgentServer({ env = process.env, fetchImpl = fetch, now = 
       const validated = validateRequest(input);
       log.setContext({ participant: validated.participant, workflow: validated.workflow,
         gameWeek: validated.state.currentWeek, gamePhase: validated.state.isComplete ? 'completed' : validated.state.history.length ? 'in_game' : 'pre_game' });
-      log.emit('request_accepted', { goal: validated.goal, provider: 'gemini', model: policy?.model ?? null });
-    } catch { return send(400, { error: 'Invalid workflow, game state, goal (1–500 characters), or participant label (at most 80 characters).' }); }
+      log.emit('request_accepted', { goal: validated.goal, taskInput: validated.taskInput, provider: 'gemini', model: policy?.model ?? null });
+    } catch { return send(400, { error: 'Invalid workflow, taskInput selection, game state, goal (1–500 characters), or participant label (at most 80 characters).' }); }
     if (configurationError) return sendError(configurationError);
     let ticket;
     try { ticket = ledger.admit(input.workflow); } catch (error) { return sendError(error); }
+    log.emit('request_admitted', { admitted: true });
     let model; let result; let runError;
     try {
       model = createGeminiModel({ apiKey: env.GEMINI_API_KEY, model: policy.model, fetchImpl,

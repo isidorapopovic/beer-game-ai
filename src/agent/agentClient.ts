@@ -2,6 +2,7 @@ import type { WorkflowId } from './boundedAgent';
 import type { GameState } from '../game/gameEngine';
 import { validateGoal } from './aiLimits.ts';
 import { getParticipantContext } from './participantContext.ts';
+import { validateTaskInput, type TaskInput } from './taskInput.ts';
 
 export type ActivityLoggingStatus = {
   enabled: boolean;
@@ -43,13 +44,14 @@ export type AgentEvidence = {
   logging?: ActivityLoggingStatus;
 };
 
-export async function requestAgent<T>(workflow: WorkflowId, state: GameState, goal: string, participantLabel?: string): Promise<{
+export async function requestAgent<T>(workflow: WorkflowId, state: GameState, goal: string, participantLabel?: string, taskInput?: TaskInput): Promise<{
   status: string; stopReason: string; error?: string; finalOutput?: T; evidence: AgentEvidence; logging?: ActivityLoggingStatus;
 }> {
   const validGoal = validateGoal(goal);
+  const validTaskInput = validateTaskInput(workflow, taskInput);
   const response = await fetch('/api/agent/run', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ workflow, state, goal: validGoal, participant: getParticipantContext(participantLabel) }), signal: AbortSignal.timeout(25_000),
+    body: JSON.stringify({ workflow, state, goal: validGoal, taskInput: validTaskInput, participant: getParticipantContext(participantLabel) }), signal: AbortSignal.timeout(25_000),
   });
   const result = await response.json();
   if (!response.ok) throw new AgentRequestError(result.error || 'The AI service is unavailable.', result.logging);

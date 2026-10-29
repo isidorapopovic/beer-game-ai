@@ -11,7 +11,7 @@ import { requestAgent, AgentRequestError } from '../src/agent/agentClient.ts';
 import { BoundedAgentOrchestrator } from '../src/agent/boundedAgent.ts';
 import { createGeminiModel } from './gemini.mjs';
 import { runWorkflow } from './workflows.mjs';
-import { fakeGemini, testEnvironment, jsonResponse, modelResponse, toolNames } from './testFixtures.mjs';
+import { fakeGemini, testEnvironment, jsonResponse, modelResponse, toolNames, taskInputFor } from './testFixtures.mjs';
 
 function environment(t, overrides = {}) {
   const env = testEnvironment(t);
@@ -21,7 +21,7 @@ const anonymous = () => ({ sessionId: `session_${crypto.randomUUID()}` });
 const input = (workflow = 'decision_coach', participant = anonymous()) => {
   let state = createGameState();
   if (workflow === 'game_analyst') while (!state.isComplete) state = submitOrder(state, 4);
-  return { workflow, state, goal: 'Help with this game.', participant };
+  return { workflow, taskInput: taskInputFor(workflow), state, goal: 'Help with this game.', participant };
 };
 async function start(t, env, fetchImpl) {
   const server = createAgentServer({ env, fetchImpl });
@@ -163,8 +163,8 @@ test('model deadline events contain a safe reason without extra requests or a fa
 test('interleaved sessions remain separate and Markdown escapes hostile labels/data safely', t => {
   const env = environment(t); let wall = Date.parse('2026-10-29T18:00:00Z'); let tick = 0;
   const logger = createToolCallLogger({ config: readLogConfig(env), now: () => wall, monotonic: () => tick++ });
-  const a = logger.begin({ requestId: 'req_alpha', participant: { ...anonymous(), label: '<script>|[x](evil)', labelSource: 'participant-supplied-unverified' } });
-  const b = logger.begin({ requestId: 'req_beta', participant: { ...anonymous(), label: 'Beta' } });
+  const a = logger.begin({ requestId: 'req_alpha', participant: { ...anonymous(), sessionSource: 'browser-supplied-unverified', label: '<script>|[x](evil)', labelSource: 'participant-supplied-unverified' } });
+  const b = logger.begin({ requestId: 'req_beta', participant: { ...anonymous(), sessionSource: 'browser-supplied-unverified', labelSource: 'participant-supplied-unverified', label: 'Beta' } });
   a.emit('request_received'); b.emit('request_received'); wall -= 5000;
   a.emit('request_accepted', { goal: '```\n# FAKE HEADING\n<script>alert(1)</script>\n[x](evil)' });
   b.emit('action_failed', { status: 'failed', error: 'Safe failure.' }); a.emit('action_completed', { status: 'completed', finalOutput: { text: '````' } });

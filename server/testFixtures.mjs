@@ -4,6 +4,8 @@ import { mkdirSync } from 'node:fs';
 import { DEFAULT_MODEL } from './aiPolicy.mjs';
 
 export const toolNames = { decision_coach: 'getCurrentGameState', candidate_order_simulation: 'simulateCandidateOrder', game_analyst: 'getGameHistory', scenario_generator: 'getAllowedScenarioTypes' };
+export const taskInputFor = workflow => workflow === 'candidate_order_simulation' ? { orderQuantity: 4 }
+  : workflow === 'scenario_generator' ? { scenario: 'growth', difficulty: 'hard' } : {};
 export function testEnvironment(t, overrides = {}) {
   const root = resolve('.local/tests'); mkdirSync(root, { recursive: true });
   const dir = mkdtempSync(join(root, 'ai-'));
@@ -12,9 +14,9 @@ export function testEnvironment(t, overrides = {}) {
 }
 export function finalFor(workflow, input) {
   const common = { summary: 'Verified result.', confidence: 'medium', completed: true };
-  if (workflow === 'decision_coach') return { ...common, recommendation: 'Order 4.', recommendedOrderQuantity: 4, evidence: [{ source: 'game_state', fact: `Inventory is ${input.toolResult.inventory}.` }] };
-  if (workflow === 'candidate_order_simulation') return { ...common, recommendation: 'Order 4.', recommendedOrderQuantity: 4, simulation: input.toolResult, evidence: [{ source: workflow, fact: 'Candidate order is 4 units.' }] };
-  if (workflow === 'scenario_generator') return { ...common, scenario: 'growth', difficulty: 'hard', explanation: 'Growth requested.', evidence: [{ source: 'allowed_scenarios', fact: 'growth' }] };
+  if (workflow === 'decision_coach') return { ...common, recommendation: 'Order 4.', recommendedOrderQuantity: 4, evidence: [{ source: 'game_state', fact: `Current inventory is ${input.toolResult.inventory}.` }] };
+  if (workflow === 'candidate_order_simulation') return { ...common, recommendation: `Order ${input.toolResult.orderQuantity}.`, recommendedOrderQuantity: input.toolResult.orderQuantity, simulation: input.toolResult, evidence: [{ source: workflow, fact: `Candidate order is ${input.toolResult.orderQuantity} units.` }] };
+  if (workflow === 'scenario_generator') { const selection = input.taskInput ?? taskInputFor(workflow); return { ...common, ...selection, explanation: 'Selected catalog scenario.', evidence: [{ source: 'allowed_scenarios', fact: selection.scenario }] }; }
   return { ...common, findings: [{ type: 'lesson', title: 'Review demand', explanation: 'Consider recorded demand.', weeks: [1], evidence: [{ source: 'game_history', fact: input.verifiedFacts[0] }] }], nextGameAdvice: ['Review the pipeline.'] };
 }
 export const jsonResponse = value => new Response(JSON.stringify(value));
@@ -31,7 +33,7 @@ export function fakeGemini(workflow, { count = 100, usage = true, transform = va
     if (url.endsWith(':countTokens')) return jsonResponse({ totalTokens: count });
     const input = JSON.parse(body.contents[0].parts[0].text);
     const proposal = input.toolResult ? { kind: 'final', final: transform(finalFor(workflow, input)) }
-      : { kind: 'tool_request', toolRequest: { name: toolNames[workflow], arguments: workflow === 'candidate_order_simulation' ? { orderQuantity: 4 } : {} } };
+      : { kind: 'tool_request', toolRequest: { name: toolNames[workflow], arguments: workflow === 'candidate_order_simulation' ? input.taskInput : {} } };
     return modelResponse(proposal, { usage });
   };
   return { requests, fetchImpl };

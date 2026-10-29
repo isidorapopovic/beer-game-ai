@@ -11,7 +11,7 @@ export function isPrivateLocalPath(path) {
   const inside = relative(projectRoot, resolve(path));
   return inside.startsWith('..') || isAbsolute(inside) || inside === '.local' || inside.startsWith('.local/') || inside.startsWith('.local\\');
 }
-export const EVENT_TYPES = new Set(['request_received', 'request_accepted', 'run_started', 'workflow_finished',
+export const EVENT_TYPES = new Set(['request_received', 'request_accepted', 'request_admitted', 'run_started', 'workflow_finished',
   'count_tokens_request_started', 'count_tokens_request_completed', 'count_tokens_request_failed',
   'model_request_started', 'model_request_completed', 'model_request_failed', 'model_output_validated', 'model_output_rejected',
   'tool_proposed', 'tool_rejected', 'tool_execution_started', 'tool_execution_completed', 'tool_execution_failed',

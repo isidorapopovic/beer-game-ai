@@ -47,10 +47,10 @@ export const ALLOWED_SCENARIOS: AllowedScenarioDefinition[] = [
 
 export const ALLOWED_DIFFICULTIES: ScenarioDifficulty[] = ["easy", "medium", "hard"];
 
-const ALLOWED_FACTS = new Set<string>([
-  ...ALLOWED_SCENARIOS.flatMap((scenario) => [scenario.id, scenario.label, scenario.description]),
-  ...ALLOWED_DIFFICULTIES,
-]);
+export function getScenarioFacts(scenario: ScenarioType, difficulty: ScenarioDifficulty): string[] {
+  const selected = ALLOWED_SCENARIOS.find(entry => entry.id === scenario)!;
+  return [selected.id, selected.label, selected.description, difficulty];
+}
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -121,7 +121,7 @@ export function normalizeScenarioSelectionResult(input: unknown): ScenarioSelect
       throw new Error("Scenario evidence must contain allowed_scenarios facts.");
     }
 
-    if (!ALLOWED_FACTS.has(item.fact)) {
+    if (!getScenarioFacts(scenario, difficulty).includes(item.fact)) {
       throw new Error("Scenario evidence fact must match an approved scenario fact.");
     }
 
@@ -193,12 +193,14 @@ export async function executeScenarioGenerator({
   modelStep,
   modelStep2,
   onEvent,
+  selection,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
   onEvent?: AgentObserver;
+  selection?: { scenario: ScenarioType; difficulty: ScenarioDifficulty };
 }): Promise<RunExecutionResult & { finalOutput?: ScenarioSelectionResult }> {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: buildScenarioGeneratorRegistry(),
@@ -221,6 +223,9 @@ export async function executeScenarioGenerator({
   }
 
   try {
+    if (selection && (result.finalOutput.scenario !== selection.scenario || result.finalOutput.difficulty !== selection.difficulty)) {
+      throw new Error("Scenario final conflicts with explicit selection.");
+    }
     return {
       ...result,
       finalOutput: normalizeScenarioSelectionResult(result.finalOutput),

@@ -10,7 +10,7 @@ import { createAgentServer } from './index.mjs';
 import { validateRequest, runWorkflow } from './workflows.mjs';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
 import { validateGoal } from '../src/agent/aiLimits.ts';
-import { normalizeDecisionCoachResult } from '../src/agent/decisionCoach.ts';
+import { normalizeDecisionCoachResult, getCurrentGameStateTool } from '../src/agent/decisionCoach.ts';
 import { normalizeCandidateOrderAdvice, simulateCandidateOrder, executeCandidateOrderSimulation } from '../src/agent/candidateOrderSimulation.ts';
 import { normalizePostGameAnalysis, getGameHistoryTool } from '../src/agent/gameAnalyst.ts';
 import { normalizeScenarioSelectionResult } from '../src/agent/scenarioGenerator.ts';
@@ -171,10 +171,10 @@ test('one deadline bounds count and generation with no retry', async () => {
 
 test('concise validators accept exact Unicode length and reject overlong fields/items', () => {
   const coach = finalFor('decision_coach', { toolResult: { inventory: 12 } });
-  assert.ok(normalizeDecisionCoachResult({ ...coach, summary: '😀'.repeat(240) }));
+  assert.ok(normalizeDecisionCoachResult({ ...coach, summary: '\u{1f600}'.repeat(240) }, getCurrentGameStateTool(createGameState())));
   for (const final of [{ ...coach, summary: 'a'.repeat(241) }, { ...coach, recommendation: 'a'.repeat(241) },
     { ...coach, evidence: [] }, { ...coach, evidence: [...coach.evidence, ...coach.evidence, ...coach.evidence] },
-    { ...coach, evidence: [{ source: 'game_state', fact: 'a'.repeat(161) }] }]) assert.throws(() => normalizeDecisionCoachResult(final));
+    { ...coach, evidence: [{ source: 'game_state', fact: 'a'.repeat(161) }] }]) assert.throws(() => normalizeDecisionCoachResult(final, getCurrentGameStateTool(createGameState())));
   const simulation = simulateCandidateOrder(createGameState(), { orderQuantity: 4 });
   const candidate = finalFor('candidate_order_simulation', { toolResult: simulation });
   assert.throws(() => normalizeCandidateOrderAdvice({ ...candidate, recommendation: 'a'.repeat(241) }, simulation));

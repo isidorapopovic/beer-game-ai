@@ -19,6 +19,7 @@ export type DecisionCoachResult = {
 
 export type CurrentGameStateToolResult = {
   week: number;
+  currentDemand: number;
   inventory: number;
   backorder: number;
   incomingShipments: number[];
@@ -30,23 +31,38 @@ export type CurrentGameStateToolResult = {
 export function getCurrentGameStateTool(state: GameState): CurrentGameStateToolResult {
   const history = state.history.slice(-5);
   const recentDemand = history.map((entry) => entry.demand);
-  const recentOrders = history.map((entry) => entry.incomingShipment);
+  // History contains submitted weeks; only the pending current-week result has no order.
+  const recentOrders = history.map((entry) => entry.order!);
 
   return {
     week: state.currentWeek,
+    currentDemand: state.customerDemand,
     inventory: state.inventory,
     backorder: state.backorders,
     incomingShipments: state.shipments
       .slice()
       .sort((first, second) => first.arrivalWeek - second.arrivalWeek)
       .map((shipment) => shipment.quantity),
-    recentDemand: recentDemand.length > 0 ? recentDemand : [state.customerDemand],
-    recentOrders: recentOrders.length > 0 ? recentOrders : [state.previousOrder],
+    recentDemand,
+    recentOrders,
     totalCost: state.history.reduce((total, entry) => total + entry.weeklyCost, 0) + state.currentWeekResult.weeklyCost,
   };
 }
 
-export function normalizeDecisionCoachResult(input: unknown): DecisionCoachResult {
+export function getDecisionCoachFacts(snapshot: CurrentGameStateToolResult): string[] {
+  return [
+    `Current week is ${snapshot.week}.`,
+    `Current inventory is ${snapshot.inventory}.`,
+    `Current backorder is ${snapshot.backorder}.`,
+    `Current demand is ${snapshot.currentDemand}.`,
+    `Total cost is ${snapshot.totalCost}.`,
+    `Incoming shipment quantities: ${JSON.stringify(snapshot.incomingShipments)}.`,
+    `Recent recorded demand: ${JSON.stringify(snapshot.recentDemand)}.`,
+    `Recent submitted orders: ${JSON.stringify(snapshot.recentOrders)}.`,
+  ];
+}
+
+export function normalizeDecisionCoachResult(input: unknown, snapshot: CurrentGameStateToolResult): DecisionCoachResult {
   if (typeof input !== "object" || input === null || Array.isArray(input)) {
     throw new Error("Decision coach result must be an object.");
   }
@@ -84,7 +100,7 @@ export function normalizeDecisionCoachResult(input: unknown): DecisionCoachResul
     const item = entry as Record<string, unknown>;
     boundedText(item.fact, 160, "Evidence fact");
 
-    if (item.source !== "game_state" || typeof item.fact !== "string") {
+    if (item.source !== "game_state" || typeof item.fact !== "string" || !getDecisionCoachFacts(snapshot).includes(item.fact)) {
       throw new Error("Each evidence item must have a valid game_state fact.");
     }
 
@@ -122,6 +138,7 @@ function buildDecisionCoachRegistry(state: GameState): Record<string, ToolDescri
         type: "object",
         properties: {
           week: { type: "number" },
+          currentDemand: { type: "number" },
           inventory: { type: "number" },
           backorder: { type: "number" },
           incomingShipments: { type: "array" },
@@ -129,7 +146,7 @@ function buildDecisionCoachRegistry(state: GameState): Record<string, ToolDescri
           recentOrders: { type: "array" },
           totalCost: { type: "number" },
         },
-        required: ["week", "inventory", "backorder", "incomingShipments", "recentDemand", "recentOrders", "totalCost"],
+        required: ["week", "currentDemand", "inventory", "backorder", "incomingShipments", "recentDemand", "recentOrders", "totalCost"],
         additionalProperties: false,
       },
       execute: (args: unknown) => {
@@ -243,7 +260,7 @@ export async function executeDecisionCoach({
 
   if (runResult.finalOutput) {
     try {
-      const normalized = normalizeDecisionCoachResult(runResult.finalOutput);
+      const normalized = normalizeDecisionCoachResult(runResult.finalOutput, runResult.run.lastToolResult as CurrentGameStateToolResult);
       return {
         ...runResult,
         finalOutput: normalized,

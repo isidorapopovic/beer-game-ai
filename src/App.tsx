@@ -85,7 +85,8 @@ function App() {
     setCandidateError("");
 
     try {
-      const result = await requestAgent<CandidateOrderAdviceResult>("candidate_order_simulation", requestedState, `Simulate my candidate order: ${orderInput.trim() || requestedState.previousOrder} units. Use that exact quantity.`, participantLabel);
+      const orderQuantity = Number(orderInput.trim() || requestedState.previousOrder);
+      const result = await requestAgent<CandidateOrderAdviceResult>("candidate_order_simulation", requestedState, `Simulate my candidate order: ${orderQuantity} units. Use that exact quantity.`, participantLabel, { orderQuantity });
       setAgentEvidence(result.evidence);
       setActivityLogging(result.logging ?? null);
 
@@ -140,7 +141,7 @@ function App() {
 
     try {
       const baseState = createGameState();
-      const result = await requestAgent<ScenarioSelectionResult>("scenario_generator", baseState, `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`, participantLabel);
+      const result = await requestAgent<ScenarioSelectionResult>("scenario_generator", baseState, `Create a ${selectedScenario} ${selectedDifficulty} pre-game scenario for a new run.`, participantLabel, { scenario: selectedScenario, difficulty: selectedDifficulty });
       setAgentEvidence(result.evidence);
       setActivityLogging(result.logging ?? null);
 
@@ -220,6 +221,10 @@ function App() {
 
       setCandidateAdvice(null);
       setCandidateError("");
+      setDecisionCoachResult(null);
+      setDecisionCoachError("");
+      setAgentEvidence(null);
+      setActivityLogging(null);
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : "The order was not accepted.",

@@ -5,9 +5,10 @@ import { resolve, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createAgentServer } from './index.mjs';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
-import { fakeGemini, toolNames } from './testFixtures.mjs';
+import { fakeGemini, toolNames, taskInputFor } from './testFixtures.mjs';
 import { DEFAULT_MODEL } from './aiPolicy.mjs';
 import { readEventLog } from './exportAiToolCallLog.mjs';
+import { summarizeActivity } from './activitySummary.mjs';
 
 const localRoot = resolve('.local'); mkdirSync(localRoot, { recursive: true });
 const directory = mkdtempSync(join(localRoot, 'spec002-smoke-'));
@@ -33,7 +34,7 @@ try {
     const participant = { sessionId: `session_${crypto.randomUUID()}`, label: `Mock-${++index}` };
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/run`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workflow, state, goal: 'Help with this synthetic game.', participant }),
+      body: JSON.stringify({ workflow, taskInput: taskInputFor(workflow), state, goal: 'Help with this synthetic game.', participant }),
     });
     const result = await response.json();
     assert.equal(result.status, 'completed'); assert.equal(result.logging.status, 'recorded');
@@ -45,12 +46,18 @@ try {
   const exported = spawnSync(process.execPath, ['server/exportAiToolCallLog.mjs', '--input', logPath, '--output', exportPath], { encoding: 'utf8' });
   assert.equal(exported.status, 0, 'Export CLI must succeed.');
   const parsed = readEventLog(logPath); assert.equal(parsed.warnings.length, 0);
+  const activity = summarizeActivity(parsed);
+  assert.ok(activity.requests.every(request => request.complete && request.admitted === true));
+  assert.equal(activity.byWorkflow.length, 4); assert.equal(activity.bySession.length, 4);
   assert.equal(new Set(parsed.events.map(event => event.requestId)).size, 4);
   const markdown = readFileSync(exportPath, 'utf8'); assert.match(markdown, /mock-test/); assert.equal(markdown.includes('mock-only-secret'), false);
   const summary = { at: new Date().toISOString(), mode: 'mock-test', status: 'PASS', records,
     totalEvents: parsed.events.length, exportWarnings: parsed.warnings.length,
     runtimeDirectory: relative(process.cwd(), directory).replaceAll('\\', '/'),
-    report: relative(process.cwd(), exportPath).replaceAll('\\', '/'), actualLiveProviderCalls: 0 };
+    report: relative(process.cwd(), exportPath).replaceAll('\\', '/'), actualLiveProviderCalls: 0,
+    admittedObserved: activity.requests.filter(request => request.admitted === true).length,
+    completeRecords: activity.requests.filter(request => request.complete).length,
+    byWorkflow: activity.byWorkflow };
   if (process.env.AI_LOGGING_SMOKE_EVIDENCE_PATH) writeFileSync(process.env.AI_LOGGING_SMOKE_EVIDENCE_PATH, JSON.stringify(summary, null, 2) + '\n');
   console.log(JSON.stringify(summary, null, 2));
 } finally { await new Promise(resolve => server.close(resolve)); }

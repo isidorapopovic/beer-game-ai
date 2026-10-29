@@ -1,6 +1,6 @@
 # Implementation plan: workflow boundaries and adversarial verification
 
-Status: Planning only. No source or test implementation in this branch.
+Status: Executed on `feature/003-workflow-boundary-validation`; local implementation/checks pass, T017 browser acceptance remains pending. See [evidence](evidence.md) and [coverage](coverage.md). The dependency/matrix design below is retained as the execution plan.
 
 Inputs: [review](review.md), [spec](spec.md), [tasks](tasks.md). Baseline: `742d31a`, 137 tests and typecheck passing.
 
@@ -85,7 +85,7 @@ The existing rendered UI smoke can check labels/markup, not click ordering or st
 
 No new hard per-user quota, identity verification, saved-game ownership, immutable historical archive, automatic order/scenario execution, persistent manual gameplay event stream, new history agent, automatic payload decoding, live model benchmarking service, billing changes, or game numeric policy changes. Actual order descriptions come from `WeekResult` history; AI records must not claim the player applied advice.
 
-## Future verification and commits
+## Planned verification and commits (execution recorded in evidence)
 
 Suggested commits: focused regressions; projection/replay/dispatch fixes; typed task input and verified facts; validated activity summaries/export; stale-advice interaction; final verification/evidence. Each implementation commit must be described in this feature's later `evidence.md` with actual test coverage.
 

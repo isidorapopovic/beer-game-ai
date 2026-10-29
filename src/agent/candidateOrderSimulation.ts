@@ -75,7 +75,7 @@ export function simulateCandidateOrder(
   };
 }
 
-function buildCandidateOrderRegistry(state: GameState): Record<string, ToolDescriptor> {
+function buildCandidateOrderRegistry(state: GameState, selectedQuantity?: number): Record<string, ToolDescriptor> {
   return {
     simulateCandidateOrder: {
       name: "simulateCandidateOrder",
@@ -84,7 +84,7 @@ function buildCandidateOrderRegistry(state: GameState): Record<string, ToolDescr
       mode: "deterministic_non_mutating",
       argsSchema: {
         type: "object",
-        properties: { orderQuantity: { type: "integer", minimum: 0, maximum: 50 } },
+        properties: { orderQuantity: { type: "integer", minimum: selectedQuantity ?? 0, maximum: selectedQuantity ?? 50 } },
         required: ["orderQuantity"],
         additionalProperties: false,
       },
@@ -102,6 +102,15 @@ function buildCandidateOrderRegistry(state: GameState): Record<string, ToolDescr
       execute: (args: unknown) => simulateCandidateOrder(state, args),
     },
   };
+}
+
+export function getCandidateOrderFacts(simulation: CandidateOrderSimulationResult): string[] {
+  return [
+    `Candidate order is ${simulation.orderQuantity} units.`,
+    ...(simulation.candidateShipmentArrivalWeek === undefined ? [] : [`The candidate order arrives in week ${simulation.candidateShipmentArrivalWeek}.`]),
+    ...(simulation.knownIncomingShipmentNextWeek === undefined ? [] : [`Known incoming shipment next week is ${simulation.knownIncomingShipmentNextWeek} units.`]),
+    ...simulation.assumptions,
+  ];
 }
 
 export function normalizeCandidateOrderAdvice(
@@ -127,6 +136,7 @@ export function normalizeCandidateOrderAdvice(
 
   const simulation = input.simulation;
   if (!isPlainObject(simulation)
+    || Object.keys(simulation).some(key => !Object.hasOwn(verifiedSimulation, key))
     || simulation.orderQuantity !== verifiedSimulation.orderQuantity
     || simulation.candidateShipmentArrivalWeek !== verifiedSimulation.candidateShipmentArrivalWeek
     || simulation.knownIncomingShipmentNextWeek !== verifiedSimulation.knownIncomingShipmentNextWeek
@@ -142,7 +152,7 @@ export function normalizeCandidateOrderAdvice(
     if (!isPlainObject(entry)
       || entry.source !== "candidate_order_simulation"
       || typeof entry.fact !== "string"
-      || entry.fact.trim().length === 0) {
+      || !getCandidateOrderFacts(verifiedSimulation).includes(entry.fact)) {
       throw new Error("Candidate order evidence must contain simulation facts.");
     }
     return { source: "candidate_order_simulation" as const, fact: entry.fact };
@@ -172,15 +182,17 @@ export async function executeCandidateOrderSimulation({
   modelStep,
   modelStep2,
   onEvent,
+  selectedQuantity,
 }: {
   state: GameState;
   goal: string;
   modelStep: (state: AgentRunState) => Promise<unknown>;
   modelStep2: (state: AgentRunState, toolResult?: unknown) => Promise<unknown>;
   onEvent?: AgentObserver;
+  selectedQuantity?: number;
 }): Promise<RunExecutionResult & { finalOutput?: CandidateOrderAdviceResult }> {
   const orchestrator = new BoundedAgentOrchestrator({
-    registry: buildCandidateOrderRegistry(state),
+    registry: buildCandidateOrderRegistry(state, selectedQuantity),
     workflow: "candidate_order_simulation",
     limits: AGENT_LIMITS,
   });

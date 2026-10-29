@@ -63,3 +63,24 @@ npm.cmd run test:logging
 `test:logging` uses explicit mock responses and no private credentials. It captures all four synthetic workflows, verifies game state and request counts, and invokes the actual export CLI in a fresh ignored directory. Its output gives the generated local report path. `test:ui` renders components; it is not an interactive browser test.
 
 Observed results and their limits are in [feature 002 evidence](../../specs/002-ai-tool-call-logging/evidence.md). Feature 001's unresolved live-model acceptance is separate; logging does not turn those earlier failures into successes.
+
+
+## Feature 003 record interpretation
+
+The exporter validates v1 metadata and consumed payload fields before rendering,
+limits each imported line to 64,000 bytes including newline, and preserves observed
+append order. Malformed rows are skipped with warnings; sequence/context/run and
+lifecycle inconsistencies mark records incomplete. It never repairs source logs.
+Wall-clock corrections and late provider outcomes after cancellation are permitted.
+
+Derived summaries group observed stages by request, workflow and anonymous session.
+These are unverified local observations, not per-person quotas or immutable audit
+records. `request_accepted` means protocol-valid; `request_admitted` is emitted only
+after durable quota reservation. Older logs without that event retain unknown
+admission. Missing/partial/off capture cannot establish complete activity totals.
+
+See [feature 003 evidence](../../specs/003-workflow-boundary-validation/evidence.md)
+and [coverage](../../specs/003-workflow-boundary-validation/coverage.md). The shared
+request contract now requires candidate `taskInput: {orderQuantity}` and scenario
+`taskInput: {scenario,difficulty}`; the UI/client sends these explicitly. Existing
+custom scripts must update their requests; no prose-parsing fallback exists.

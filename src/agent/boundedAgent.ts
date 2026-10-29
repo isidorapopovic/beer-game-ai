@@ -555,7 +555,7 @@ export class BoundedAgentOrchestrator {
       }
 
       const toolName = proposal.toolRequest.name;
-      const tool = this.registry[toolName];
+      const tool = Object.hasOwn(this.registry, toolName) ? this.registry[toolName] : undefined;
 
       if (!tool) {
         emit("tool_rejected", { name: toolName, arguments: proposal.toolRequest.arguments, reason: "unknown_tool" });

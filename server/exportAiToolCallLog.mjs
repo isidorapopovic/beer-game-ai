@@ -1,7 +1,8 @@
 import { readFileSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { EVENT_TYPES, STORAGE_LIMIT_BYTES, isPrivateLocalPath } from './aiToolCallLog.mjs';
+import { EVENT_LIMIT_BYTES, STORAGE_LIMIT_BYTES, isPrivateLocalPath } from './aiToolCallLog.mjs';
+import { validateActivityEvent, summarizeActivity } from './activitySummary.mjs';
 
 export function budapestTimestamp(utc) {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Budapest', year: 'numeric', month: '2-digit',
@@ -19,12 +20,8 @@ export function readEventLog(path, { maxBytes = STORAGE_LIMIT_BYTES } = {}) {
   for (const [index, line] of lines.entries()) {
     if (!line.trim()) continue;
     try {
-      const event = JSON.parse(line);
-      if (event.schemaVersion !== 1 || !/^req_[a-zA-Z0-9_-]{1,100}$/.test(event.requestId)
-        || !Number.isSafeInteger(event.sequence) || event.sequence < 1 || !EVENT_TYPES.has(event.type)
-        || typeof event.at !== 'string' || !Number.isFinite(Date.parse(event.at))
-        || !['live', 'mock-test', 'development'].includes(event.mode)
-        || !['exact', 'redacted', 'omitted'].includes(event.payload?.representation)) throw new Error('Invalid event.');
+      if (Buffer.byteLength(line) + 1 > EVENT_LIMIT_BYTES) throw new Error('Oversized line.');
+      const event = validateActivityEvent(JSON.parse(line));
       events.push(event);
     } catch { warnings.push(`Line ${index + 1} is invalid/truncated and was not exported. Earlier valid records are preserved.`); }
   }
@@ -35,22 +32,17 @@ const cell = value => String(value ?? 'not captured').replace(/&/g, '&amp;').rep
   .replace(/[\r\n\u0000-\u001f\u007f]/g, ' ').replace(/[\\`|*_\[\]()#!]/g, '\\$&');
 const code = value => JSON.stringify(value ?? null, null, 2).split('\n').map(line => '    ' + line).join('\n');
 
-export function renderToolCallMarkdown({ events, warnings = [] }) {
-  const groups = new Map();
-  for (const event of events) { if (!groups.has(event.requestId)) groups.set(event.requestId, []); groups.get(event.requestId).push(event); }
+export function renderToolCallMarkdown(record) {
+  const summary = summarizeActivity(record);
+  const warnings = summary.warnings;
   const rows = []; const details = [];
-  for (const [id, unsorted] of groups) {
-    const records = [...unsorted].sort((a, b) => a.sequence - b.sequence);
+  for (const request of summary.requests) {
+    const { requestId: id, records, context, runId, terminal: final, complete, status } = request;
     const first = records[0]; const last = records.at(-1);
-    const context = records.find(event => event.type === 'request_accepted') ?? first;
     const participant = context.participant;
-    const runId = records.find(event => event.runId)?.runId;
-    const final = [...records].reverse().find(event => ['action_completed', 'action_failed', 'action_cancelled'].includes(event.type));
     const ordered = records.every((event, i) => event.sequence === i + 1);
-    const complete = Boolean(final) && ordered && !records.some(event => event.payload.representation === 'omitted');
     const proposed = records.filter(event => event.type === 'tool_proposed').map(event => event.payload.data?.name ?? 'name omitted');
     const executed = records.filter(event => event.type === 'tool_execution_started').map(event => event.payload.data?.name ?? 'name omitted');
-    const status = final?.payload.data?.status ?? final?.type ?? 'incomplete';
     const evidence = final?.payload.data?.evidence;
     const actualModel = [...records].reverse().find(event => event.type === 'model_request_completed' && event.payload.data?.actualModel)?.payload.data.actualModel
       ?? records.find(event => event.type === 'model_request_started')?.payload.data?.model;
@@ -70,10 +62,13 @@ export function renderToolCallMarkdown({ events, warnings = [] }) {
       `| Elapsed milliseconds | ${cell(final?.elapsedMs ?? last.elapsedMs)} |\n` +
       `| Actual/configured model | ${cell(actualModel)} |\n` +
       `| Observed generation/count/tool starts | ${observedModels} / ${observedCounts} / ${executed.length} |\n` +
-      `| Prompt/candidate/thinking/total tokens | ${cell(evidence?.usage?.promptTokenCount)} / ${cell(evidence?.usage?.candidatesTokenCount)} / ${cell(evidence?.usage?.thoughtsTokenCount)} / ${cell(evidence?.usage?.totalTokenCount)} |\n` +
-      `| Usage completeness / estimated USD | ${cell(evidence?.usageStatus)} / ${cell(evidence?.estimatedUsd)} |\n` +
-      `| Known USD portion / price date | ${cell(evidence?.knownEstimatedUsd)} / ${cell(evidence?.priceDate)} |\n` +
+      `| Observed generation/count/tool outcomes (completed / failed) | ${request.model.completed} / ${request.model.failed}; ${request.countTokens.completed} / ${request.countTokens.failed}; ${request.tool.completed} / ${request.tool.failed} |\n` +
+      `| Protocol valid / quota admitted / dispatched | ${request.protocolValid} / ${request.admitted} / ${request.dispatched} |\n` +
+      `| Prompt/candidate/thinking/total tokens | ${cell(request.usage?.promptTokenCount)} / ${cell(request.usage?.candidatesTokenCount)} / ${cell(request.usage?.thoughtsTokenCount)} / ${cell(request.usage?.totalTokenCount)} |\n` +
+      `| Usage completeness / estimated USD | ${cell(request.usageStatus)} / ${cell(request.estimatedUsd)} |\n` +
+      `| Known USD portion / price date | ${cell(request.knownEstimatedUsd)} / ${cell(evidence?.priceDate)} |\n` +
       `| Status / record completeness | ${cell(status)} / ${complete ? 'observed stages recorded' : 'partial or incomplete'} |\n\n` +
+      `Issues: ${cell(request.issues.join('; ') || 'none observed')}. Observed terminal status: ${cell(request.observedStatus)}.\n\n` +
       `**User input — ${cell(accepted?.payload.representation ?? 'not captured')}**\n\n${code(accepted?.payload.data?.goal)}\n\n` +
       `**Model requests and tool events**\n\n` + records.filter(event => !['request_accepted'].includes(event.type)).map(event =>
         `Event ${event.sequence}: **${cell(event.type)}** · ${cell(budapestTimestamp(event.at))} · ${cell(event.payload.representation)}` +
@@ -86,6 +81,10 @@ export function renderToolCallMarkdown({ events, warnings = [] }) {
   return '# AI tool-call log — local export\n\nReporting timezone: Europe/Budapest; source timestamps remain UTC in the JSONL record.\n\n' +
     'Anonymous sessions and supplied participant labels are unverified. A recommendation does not prove a player submitted an order. Payloads are indented JSON data, never executable Markdown/HTML.\n\n' +
     '## Export warnings\n\n' + (warnings.length ? warnings.map(warning => '- ' + cell(warning)).join('\n') : 'None observed.') +
+    '\n\n## Observed grouped totals\n\n' + cell(summary.coverage) + '. Accepted means protocol-valid; it does not prove quota admission. Older logs without request_admitted retain unknown admission.\n\n' +
+    [['Workflow/task', summary.byWorkflow], ['Anonymous session (unverified)', summary.bySession]].map(([label, totals]) =>
+      `### ${label}\n\n| Group | Requests | Received | Protocol valid | Admitted observed | Admission unknown | Dispatched | Completed | Rejected | Incomplete | Generation/count/tool starts | Known USD lower bound | Unknown/partial usage |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n` +
+      totals.map(row => `| ${cell(row.key)} | ${row.observedRequests} | ${row.received} | ${row.protocolValid} | ${row.admittedObserved} | ${row.admissionUnknown} | ${row.dispatched} | ${row.completed} | ${row.rejected} | ${row.incomplete} | ${row.modelStarts}/${row.countStarts}/${row.toolStarts} | ${row.knownEstimatedUsd} | ${row.unknownUsageRequests} |`).join('\n')).join('\n\n') +
     '\n\n## Call index\n\n| Record ID | Started at (with offset) | Participant ID | Context / live or mock | Run ID | Workflow | Requested tool(s) | Executed tool(s) | Status |\n|---|---|---|---|---|---|---|---|---|\n' +
     rows.join('\n') + '\n\n## Observed records\n\n' + (details.join('\n') || 'No observed records.') + '\n';
 }

@@ -132,10 +132,10 @@ test("normalized decision coach result keeps only valid data", () => {
     summary: "Shortage is growing.",
     recommendation: "Order 7 units.",
     recommendedOrderQuantity: 7,
-    evidence: [{ source: "game_state", fact: "Demand is rising." }],
+    evidence: [{ source: "game_state", fact: "Current inventory is 12." }],
     confidence: "high",
     completed: true,
-  });
+  }, getCurrentGameStateTool(createGameState()));
 
   assert.equal(normalized.summary, "Shortage is growing.");
   assert.equal(normalized.recommendedOrderQuantity, 7);

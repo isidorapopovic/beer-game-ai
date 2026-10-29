@@ -7,6 +7,9 @@ Keep game rules, tool contracts, evidence, and the context manifest here. Implem
 - [Game specification](GAME_SPEC.md)
 - [AI tool contract](TOOL_CONTRACT.md)
 - [Context manifest](CONTEXT_MANIFEST.md)
+- [Feature 003 workflow boundary evidence](EVIDENCE_003.md)
+- [Feature 001 low-cost AI evidence](../specs/001-low-cost-ai/evidence.md)
+- [Feature 002 logging evidence](../specs/002-ai-tool-call-logging/evidence.md)
 - [Week 4 evidence](EVIDENCE_004.md)
 - [Week 5 evidence](EVIDENCE_005.md)
 
