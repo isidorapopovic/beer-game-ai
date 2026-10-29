@@ -67,7 +67,19 @@ User request: add a separate Markdown file recording when each user called an AI
 
 Commit subject: `docs(ai): add participant tool-call log template` (the hash is available in `git log` and the delivery message).
 
-- Added [AI_TOOL_CALL_LOG.md](AI_TOOL_CALL_LOG.md) with a call index and detailed per-action template: participant/session/run IDs, timestamps, model requests, proposed versus executed tools, exact/redacted inputs and outputs, final response, usage, status, and evidence.
+- Added the [AI tool-call record template](../specs/002-ai-tool-call-logging/log-template.md) (originally `docs/AI_TOOL_CALL_LOG.md`, later moved into feature 002) with a call index and detailed per-action template: participant/session/run IDs, timestamps, model requests, proposed versus executed tools, exact/redacted inputs and outputs, final response, usage, status, and evidence.
 - Linked it from `AI_USAGE_LOG.md` and documented the absence of accounts and automatic persistence. No past activity was invented; no live calls or fabricated user records were added.
 - This remains a documentation change on `docs/cheap-ai-model-spec`. Automatic capture requires later server work; this file does not claim otherwise.
 - Verification: Markdown relative links and whitespace checked. Application tests were not rerun for this template-only addition; the 79-test baseline above remains the last observed test result. No push or merge performed.
+
+## Follow-up delivery: feature 002 specification package
+
+User request: move the tool-call log into a named `specs/002` feature and add specification, plan, and task Markdown files.
+
+Commit subject: `docs(logging): organize tool-call tracking as feature 002` (exact hash available in `git log` and the delivery message).
+
+- Moved the original manual log to `specs/002-ai-tool-call-logging/log-template.md`, preserving its record fields and updating relative links.
+- Added [spec.md](../specs/002-ai-tool-call-logging/spec.md), [plan.md](../specs/002-ai-tool-call-logging/plan.md), and [tasks.md](../specs/002-ai-tool-call-logging/tasks.md). They define future automatic event capture, pseudonymous attribution, sanitized persistence, Markdown export, and verification; all 20 runtime tasks remain unchecked.
+- Updated the development log and this report to the new paths. Feature 001 remains the separate low-cost model specification.
+- Validation: checked relative Markdown links and whitespace, confirmed the old log path is removed and the new package is present. No runtime code changes or live AI calls; application tests were not repeated for this documentation-only move.
+- Kept the existing feature branch. Nothing pushed or merged; `main` remains untouched.

@@ -2,7 +2,7 @@
 
 # AI Usage Log — Beer Distribution Game
 
-Related log: [AI tool-call log](AI_TOOL_CALL_LOG.md) records the template for participant, timestamp, tool arguments/results, and final AI responses. It is manually maintained; automatic application logging is not implemented.
+Related feature: [002 — AI tool-call logging](../specs/002-ai-tool-call-logging/spec.md), with [plan](../specs/002-ai-tool-call-logging/plan.md), [tasks](../specs/002-ai-tool-call-logging/tasks.md), and [record template](../specs/002-ai-tool-call-logging/log-template.md). The template is manually maintained; automatic application logging is not implemented.
 
 ## 1. Svrha
 

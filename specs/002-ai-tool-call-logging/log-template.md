@@ -1,4 +1,4 @@
-# AI tool-call log
+# AI tool-call logging: record template
 
 Created: 2026-10-29
 
@@ -10,7 +10,9 @@ This is a **manual log and recording template**. The application does not automa
 
 The current game has no login or user accounts. Use an explicitly supplied pseudonymous participant ID when available; otherwise record `unknown`. A run ID identifies an AI action, not a person. Do not infer a person's identity from the device, API key, Git author, or this chat.
 
-For development decisions and project progress, see [AI_USAGE_LOG.md](AI_USAGE_LOG.md). For proposed token/cost controls, see [the low-cost AI specification](../specs/001-low-cost-ai/spec.md).
+Feature documents: [specification](spec.md), [implementation plan](plan.md), and [tasks](tasks.md).
+
+For development decisions and project progress, see [AI_USAGE_LOG.md](../../docs/AI_USAGE_LOG.md). For proposed token/cost controls, see [the low-cost AI specification](../001-low-cost-ai/spec.md).
 
 ## What counts as a call
 
