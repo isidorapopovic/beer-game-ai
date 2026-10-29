@@ -9,8 +9,8 @@ in [review.md](review.md); that review remains an unchanged historical record.
 pending.** Eighteen tasks are complete; T017's source change is implemented but its
 required browser interaction is unverified. The original verification session made
 no commit or merge. A subsequent user-authorized commit and local-main merge are
-recorded below. No push, live API call, private configuration edit, or
-production-state/ledger change was made.
+recorded below, along with the later user-authorized GitHub publication. No live
+AI API call, private configuration edit, or production-state/ledger change was made.
 
 ## What changed
 
@@ -188,7 +188,7 @@ initial branch-creation attempt was blocked by the filesystem sandbox; the appro
 local branch operation then succeeded. No automatic-approval rejection remains
 unresolved.
 
-## User-authorized commit and local-main delivery ? 2026-10-29
+## User-authorized commit and local-main delivery - 2026-10-29
 
 The user subsequently requested committing and merging to `main`.
 
@@ -213,3 +213,24 @@ The final delivery-documentation commit contains no runtime changes. Prior
 verification remains 446 passing tests plus typecheck, rendered UI, production
 build and mock logging/export; these were not rerun solely for the Git pointer and
 documentation changes. T017 browser acceptance and spec 001 T022 remain open.
+
+
+## User-authorized GitHub publication - 2026-10-29
+
+After the user requested synchronization and publication, executed
+`git fetch --prune origin`. The refreshed main comparison was 32 local-only commits
+and zero remote-only commits. `origin/main` was an ancestor of local main, so no
+pull, conflict resolution or additional merge was needed.
+
+Executed `git push origin main` successfully, without force. GitHub acknowledged
+`e69ece4..e4f9f3a main -> main` for
+`https://github.com/isidorapopovic/beer-game-ai.git`. This publishes the completed
+workflow work, specs 001-003 and supplied W08 materials on the remote main branch.
+W08 remains course material only; browser T017 and spec 001 T022 remain open.
+
+The publication-documentation commit updates this evidence and is pushed to the
+same branch separately. No runtime changes or live AI requests are involved.
+
+Public web retrieval of the repository page returned a cache-miss error in the
+available web tool. Remote Git verification is used to confirm branch identity;
+no interactive GitHub web-page inspection is claimed.

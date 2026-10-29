@@ -6,7 +6,7 @@
   "baseCommit": "5a48e72",
   "branch": "feature/003-workflow-boundary-validation",
   "implementationCommit": "f887018",
-  "pushed": false,
+  "pushed": true,
   "merged": true,
   "mainUnchanged": false,
   "actualLiveProviderCalls": 0,
@@ -687,9 +687,28 @@
     "method": "fast-forward",
     "implementationCommit": "f887018",
     "courseMaterialsCommit": "fd26a7d",
-    "pushed": false,
+    "pushed": true,
     "runtimeChangedSinceVerification": false,
     "testsRerunForGitOnlyChanges": false,
     "note": "Delivery documentation committed separately; exact hash in Git history. T017 remains pending."
+  },
+  "publication": {
+    "date": "2026-10-29",
+    "userAuthorized": true,
+    "remote": "origin",
+    "repository": "https://github.com/isidorapopovic/beer-game-ai",
+    "branch": "main",
+    "fetch": "git fetch --prune origin",
+    "afterFetch": {
+      "localOnlyCommits": 32,
+      "remoteOnlyCommits": 0
+    },
+    "pullNeeded": false,
+    "push": "git push origin main",
+    "firstPublishedCommit": "e4f9f3a",
+    "forcePush": false,
+    "publicationDocumentation": "Separate documentation commit; exact hash in Git history",
+    "webPageInspection": "Unavailable: web retrieval cache miss; verify remote branch via Git",
+    "runtimeChanges": false
   }
 }

@@ -6,8 +6,9 @@ evidence files in this directory.
 Implemented in commit `f887018`, based on `5a48e72`, on branch
 `feature/003-workflow-boundary-validation`. On 2026-10-29, the user requested a
 commit and merge to local `main`. A fast-forward merge through `fd26a7d` included
-the implementation and a separate W08-materials commit. Nothing was pushed. See
-the delivery record in the detailed execution evidence.
+the implementation and a separate W08-materials commit. A later user-authorized
+fetch and push published local main to GitHub on 2026-10-29. See the delivery and
+publication records in the detailed execution evidence.
 
 The implementation fixes coach order/demand projection, legal-order replay,
 explicit candidate/scenario selection, deterministic structured facts, prototype
