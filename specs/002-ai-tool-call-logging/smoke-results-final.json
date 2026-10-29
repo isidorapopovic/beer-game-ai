@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-29T19:01:35.486Z",
+  "mode": "mock-test",
+  "status": "PASS",
+  "records": [
+    {
+      "workflow": "decision_coach",
+      "mode": "mock-test",
+      "status": "PASS",
+      "requestId": "req_ba7e3f97-14d2-4985-8287-7497bc0b4baf",
+      "runId": "run_21d300d7-225a-46f2-b732-2883610c1096",
+      "eventsRecorded": 18,
+      "providerRequests": 4,
+      "gameStateUnchanged": true
+    },
+    {
+      "workflow": "candidate_order_simulation",
+      "mode": "mock-test",
+      "status": "PASS",
+      "requestId": "req_ddbeee2b-ae99-4450-b990-abadfd4a0b49",
+      "runId": "run_f9a8e4c4-cf57-4b37-bff3-431fa7aa0ce6",
+      "eventsRecorded": 18,
+      "providerRequests": 4,
+      "gameStateUnchanged": true
+    },
+    {
+      "workflow": "game_analyst",
+      "mode": "mock-test",
+      "status": "PASS",
+      "requestId": "req_0e584aea-c641-4bb3-af84-ffdae57fc5a7",
+      "runId": "run_12fc9b57-47e6-4ed6-8b7f-ee55b4d8ba43",
+      "eventsRecorded": 18,
+      "providerRequests": 4,
+      "gameStateUnchanged": true
+    },
+    {
+      "workflow": "scenario_generator",
+      "mode": "mock-test",
+      "status": "PASS",
+      "requestId": "req_42a9dbce-00a4-49b6-8197-c3fba5dbcd01",
+      "runId": "run_66028d46-5adf-4ced-af17-15f9d1fcba13",
+      "eventsRecorded": 18,
+      "providerRequests": 4,
+      "gameStateUnchanged": true
+    }
+  ],
+  "totalEvents": 72,
+  "exportWarnings": 0,
+  "runtimeDirectory": ".local/spec002-smoke-OnZC0p",
+  "report": ".local/spec002-smoke-OnZC0p/AI_TOOL_CALL_LOG.md",
+  "actualLiveProviderCalls": 0
+}

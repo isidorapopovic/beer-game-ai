@@ -4,22 +4,24 @@ Feature: 002
 
 Date: 2026-10-29
 
-Branch: `docs/cheap-ai-model-spec`
+Implementation branch: `feature/002-ai-tool-call-logging`
 
-Status: Specified, not implemented. This change moves the manual template and adds planning documents; it does not enable automatic logging.
+Status: Implemented; accepted for the tested local mock capture/export configuration. Runtime recording requires explicit enablement. See [evidence.md](evidence.md) for results and limits.
 
 ## Goal and scope
 
 Track when a participant asks the game for AI assistance, their input, the model and tool called, the tool arguments/result, the final response, and the outcome. Give the project owner a readable Markdown record backed by observed events.
 
-The existing manual record format has moved from `docs/AI_TOOL_CALL_LOG.md` to [log-template.md](log-template.md). The [plan](plan.md) and [tasks](tasks.md) define future automatic capture. Keep development-agent activity separate from player activity. Never fabricate historical calls.
+The existing manual record format moved from `docs/AI_TOOL_CALL_LOG.md` to [log-template.md](log-template.md). The [plan](plan.md) and [tasks](tasks.md) describe the implemented capture/export feature. Keep development-agent activity separate from player activity. Never fabricate historical calls.
 
-## Current baseline
+## Baseline before implementation
 
 - The app has four workflows and a local Node endpoint, `POST /api/agent/run`.
 - Run evidence currently includes workflow, run ID, provider, model/tool counters, elapsed time, status, and stop reason.
 - There are no player accounts, persistent participant/session IDs, or automatic input/output log files.
 - The template is a manual document. Existing counters are not a complete transcript.
+
+The current implementation adds configured local capture, anonymous session attribution, tool/model observers, and Markdown export. The tracked template remains a reference; actual logs and exports stay outside Git. [Setup guide](../../docs/guides/AI_TOOL_CALL_LOGGING.md).
 
 ## User stories and acceptance scenarios
 

@@ -32,7 +32,7 @@ Public UI evidence shows separate request counts, prompt/candidate/thinking/tota
 
 Keep `AI_COST_RECONCILIATION_VERIFIED=false` until a live sample verifies complete candidate/thinking billing accounting. In the observed live runs Gemini omitted thinking-token metadata; full cost remained unknown and reservations were retained. The opt-in reconciliation path is covered by deterministic tests, but it is not certified by those incomplete live samples. Do not enable it merely because an action succeeded.
 
-If a ledger write fails after a request, the result may still be shown with a retained-reservation/unavailable-ledger warning. Restore the original ledger before continuing AI requests. This implementation does not provide a transcript log; that is feature 002.
+If a ledger write fails after a request, the result may still be shown with a retained-reservation/unavailable-ledger warning. Restore the original ledger before continuing AI requests. Transcript capture is a separate opt-in [feature 002 logging system](AI_TOOL_CALL_LOGGING.md); its JSONL is independent from the spending ledger.
 
 ## Verification commands
 

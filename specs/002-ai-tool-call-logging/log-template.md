@@ -6,7 +6,7 @@ Created: 2026-10-29
 
 Record who requested AI assistance, when it happened, the user's input, which tool was requested/executed, the tool input/output, and the final AI response. Keep one record per AI action, with a separate event for every tool attempt.
 
-This is a **manual log and recording template**. The application does not automatically append to this Markdown file. Automatic capture would require a separate server implementation; creating this file does not enable it. No historical user calls have been reconstructed, and no live player calls are recorded below yet.
+This is a **manual/reference recording template**, not a runtime log. Feature 002 now implements automatic server capture when explicitly enabled, using ignored local JSONL and a Markdown export command. The application never appends to this tracked file. No historical user calls have been reconstructed, and no live player calls are entered below. See [setup](../../docs/guides/AI_TOOL_CALL_LOGGING.md) and [execution evidence](evidence.md).
 
 The current game has no login or user accounts. Use an explicitly supplied pseudonymous participant ID when available; otherwise record `unknown`. A run ID identifies an AI action, not a person. Do not infer a person's identity from the device, API key, Git author, or this chat.
 
@@ -123,4 +123,4 @@ Repeat the tool event section for every proposal/attempt in this action.
 
 ## Observed records
 
-None entered. Automatic per-user logging, persistent participant/session identification, and runtime input/output capture are not implemented by this document.
+None entered in this reference template. Configured runtime capture and exports are implemented separately; use the setup guide. Synthetic smoke results are explicitly labelled mock evidence and do not certify live player activity.

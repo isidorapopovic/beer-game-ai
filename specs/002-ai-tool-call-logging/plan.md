@@ -2,9 +2,11 @@
 
 Feature: 002
 
-Status: Future implementation. This package currently contains documentation only.
+Status: Implemented and verified in the local mock configuration; runtime capture is explicitly opt-in. [Evidence](evidence.md) records actual checks and limitations.
 
 Read [spec.md](spec.md), use [log-template.md](log-template.md) for the report format, and execute [tasks.md](tasks.md) in dependency order.
+
+Execution started from `00a5607` (feature 001 runtime/evidence) on new branch `feature/002-ai-tool-call-logging`. Runtime implementation is commit `2d5907d`. The observer, writer, HTTP/client metadata, export, and tests were consolidated into one compatible runtime commit, followed by an evidence/setup commit. The five subjects below are the original proposed breakdown, not five extra commits already made.
 
 ## Architecture
 
@@ -34,7 +36,7 @@ Do not import Node filesystem modules into browser-shared workflow code. Inject 
 4. `feat(logging): export AI action history as Markdown` — template-based index/details with safe escaping and local output selection.
 5. `test(logging): verify correlation privacy and failure handling` — deterministic integration/export tests and regression evidence.
 
-These are future runtime commits, not commits already made for this documentation reorganization.
+These are the original proposed runtime commits; actual commit descriptions are in [evidence.md](evidence.md).
 
 ## Dependency on feature 001
 

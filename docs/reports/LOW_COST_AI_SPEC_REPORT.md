@@ -105,3 +105,14 @@ Implementation moved to new branch `feature/001-low-cost-ai` from reviewed docum
 Final local results: 110 tests passed, 0 failed/skipped; typecheck, rendered UI smoke, and production build passed. Live coaching and candidate simulation succeeded in separate runs. Analyst/scenario verification remains incomplete because of timeouts/upstream 503s and a rejected analysis result. The browser automation host was unavailable. No automatic retries, cap expansion, model upgrade, private `.env` edit, or reconciliation of unknown usage was used to hide failures.
 
 Full evidence and follow-up are in [spec 001 evidence](../../specs/001-low-cost-ai/evidence.md); current operations are in [the setup guide](../guides/LOW_COST_AI.md). Spec 002 is not implemented. Nothing was pushed or merged; `main` remains unchanged.
+
+## Feature 002 runtime execution — 2026-10-29
+
+Spec 002 was subsequently implemented on new branch `feature/002-ai-tool-call-logging`, starting from `00a5607`. This supersedes the preceding historical statement that spec 002 was not implemented.
+
+- `2d5907d` — `feat(logging): capture and export correlated AI tool activity`: anonymous session/optional label context, request/run correlation, actual model/tool lifecycle observers, sanitized bounded JSONL, independent status/cancellation, private local Markdown export, UI integration, and tests.
+- `docs(logging): record feature 002 verification and setup`: records actual mock smoke summaries and task/acceptance evidence, updates the reference template and setup guidance, and documents activation/limitations. Its hash is available in `git log` and the delivery message.
+
+Results: 137 tests passed, 0 failed/skipped; typecheck, rendered UI, production build, and actual local capture/export CLI smoke passed. Four synthetic workflows produced 72 events with no export warnings, unchanged game states, and zero live provider calls. All 20 tasks have evidence. Logging is off by default until explicitly enabled; private configuration was preserved. No real participant transcript was fabricated or committed.
+
+See [feature 002 evidence](../../specs/002-ai-tool-call-logging/evidence.md) and [logging setup/export guide](../guides/AI_TOOL_CALL_LOGGING.md). The original five proposed commits were consolidated into one compatible runtime commit and one evidence/setup commit. No push or merge; `main` unchanged.

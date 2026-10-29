@@ -2,7 +2,7 @@
 
 # AI Usage Log — Beer Distribution Game
 
-Related feature: [002 — AI tool-call logging](../../specs/002-ai-tool-call-logging/spec.md), with [plan](../../specs/002-ai-tool-call-logging/plan.md), [tasks](../../specs/002-ai-tool-call-logging/tasks.md), and [record template](../../specs/002-ai-tool-call-logging/log-template.md). The template is manually maintained; automatic application logging is not implemented.
+Related feature: [002 — AI tool-call logging](../../specs/002-ai-tool-call-logging/spec.md), with [plan](../../specs/002-ai-tool-call-logging/plan.md), [tasks](../../specs/002-ai-tool-call-logging/tasks.md), and [record template](../../specs/002-ai-tool-call-logging/log-template.md). Automatic local capture/export is now implemented when explicitly enabled; the tracked template remains a reference.
 
 ## 1. Svrha
 
@@ -27,6 +27,8 @@ Ako to nije jasno, sledeći korak treba da bude analiza ili lokalni test, a ne n
 ---
 
 # 2. Evidencija
+
+Feature 002 execution (2026-10-29): implemented anonymous session/optional label attribution, model/tool observers, sanitized bounded local JSONL, independent recording status, cancellation handling, and a local Markdown exporter on `feature/002-ai-tool-call-logging`. Verification: 137 tests passed, typecheck/rendered UI/build passed, and the mock capture/export smoke recorded 72 events across four unchanged game snapshots, with zero live provider calls. Runtime files remain ignored; private `.env` was preserved. Detailed results, failures, limits, and commit descriptions are in [feature 002 evidence](../../specs/002-ai-tool-call-logging/evidence.md).
 
 Feature 001 execution (2026-10-29): implemented the reviewed low-cost AI policy on `feature/001-low-cost-ai`, preserving private configuration and game mechanics. Local verification: 110 automated tests, typecheck, rendered UI smoke, and production build passed. Live coaching and candidate simulation succeeded in separate runs; analysis/scenario acceptance remains incomplete because of upstream failures/timeouts and a rejected analysis result. Detailed observed evidence and later updates are in [feature 001 evidence](../../specs/001-low-cost-ai/evidence.md). No push or merge to `main`.
 

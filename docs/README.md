@@ -16,11 +16,12 @@ These documents describe their original scope and verification dates. Consult th
 
 - [Guides: Gemini integration and local setup](guides/WEEK5_GEMINI_INTEGRATION.md)
 - [Guides: low-cost AI configuration and limits](guides/LOW_COST_AI.md)
+- [Guides: local AI tool-call logging and Markdown export](guides/AI_TOOL_CALL_LOGGING.md)
 - [Logs: AI development usage](logs/AI_USAGE_LOG.md)
 - [Reports: Week 3](reports/WEEK_3_REPORT.md)
 - [Reports: low-cost AI specification and commit history](reports/LOW_COST_AI_SPEC_REPORT.md)
 - [Reports: documentation reorganization](reports/DOCUMENTATION_REORGANIZATION_REPORT.md)
 
-The [AI tool-call record template](../specs/002-ai-tool-call-logging/log-template.md) belongs to feature 002. It does not automatically record application activity.
+The [AI tool-call record template](../specs/002-ai-tool-call-logging/log-template.md) belongs to feature 002. Configured capture writes ignored local JSONL; the export command produces Markdown without modifying this tracked template.
 
 Older build prompts, evaluation plans, and workflow tasks are in [specs/done-previously](../specs/done-previously/README.md).
