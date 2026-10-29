@@ -4,6 +4,8 @@ Feature: 002
 
 All items below are future runtime work. The moved manual template and these planning documents do not complete them.
 
+Required execution record: [evidence.md](evidence.md) in this folder. After each session, record actual outcomes and link each completed task to its evidence. This is separate from the user activity log; do not mark completion from a template or baseline tests alone.
+
 ## Foundations — US1
 
 - [ ] T001 Define event schema, context/evidence mode, completeness, and logging status types.
@@ -33,5 +35,5 @@ All items below are future runtime work. The moved manual template and these pla
 - [ ] T016 Test interleaved requests, anonymous/shared-session attribution, missing metadata, restart, and file failures.
 - [ ] T017 Test secret redaction, multibyte limits, storage capacity, backticks/HTML, and exact-vs-omitted payload representation.
 - [ ] T018 Assert no extra provider requests, no tool retries caused by logging, and unchanged game state.
-- [ ] T019 Run tests, typecheck, build, and a mock local log/export smoke; record real results and limitations.
-- [ ] T020 Update setup/report docs. Record live evidence only when actually observed; keep work on a feature branch and do not push without instruction.
+- [ ] T019 Run tests, typecheck, build, and a mock local log/export smoke; record actual commands, exit codes, test counts, observations, and failures in [evidence.md](evidence.md).
+- [ ] T020 Finalize this folder's [evidence.md](evidence.md): task mapping, changed files/commits, sanitized log/export observations, privacy checks, live status, limitations, and acceptance conclusion; update setup docs. Record live evidence only when actually observed; keep work on a feature branch and do not push without instruction.

@@ -83,3 +83,14 @@ Commit subject: `docs(logging): organize tool-call tracking as feature 002` (exa
 - Updated the development log and this report to the new paths. Feature 001 remains the separate low-cost model specification.
 - Validation: checked relative Markdown links and whitespace, confirmed the old log path is removed and the new package is present. No runtime code changes or live AI calls; application tests were not repeated for this documentation-only move.
 - Kept the existing feature branch. Nothing pushed or merged; `main` remains untouched.
+
+## Follow-up delivery: per-feature execution evidence
+
+User request: give features 001 and 002 the same kind of evidence record as the existing Week 4/5 records, saved inside their own folders and completed after execution.
+
+Commit subject: `docs: require execution evidence for features 001 and 002` (hash available in `git log` and the delivery message).
+
+- Added [001 evidence](../../specs/001-low-cost-ai/evidence.md) and [002 evidence](../../specs/002-ai-tool-call-logging/evidence.md), with run history, changed files/decisions, command results, every task ID, feature-specific acceptance cases, four-workflow observations, sanitized input/output traces, browser checks, failures, commits, and acceptance conclusion.
+- Updated both specifications, plans, task checklists, and the specs index to require evidence in the same folder after each implementation session and before marking tasks complete.
+- All feature execution results remain NOT RUN. No runtime implementation, new test result, or live acceptance is claimed. Documentation links, task coverage, and whitespace were checked; application tests were not repeated for this documentation-only addition.
+- Work remains on the existing local feature branch; no push or merge to `main`.

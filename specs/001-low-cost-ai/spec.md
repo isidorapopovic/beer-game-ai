@@ -134,6 +134,8 @@ The limits below cover the complete generated JSON, not just visible prose. They
 
 ## Success criteria
 
+Execution evidence must be maintained in [evidence.md](evidence.md) in this same feature folder. After each implementation session, record actual changes, commands/results, task-to-evidence mapping, sanitized workflow observations, failures, and acceptance status. Do not mark tasks complete or claim feature acceptance without corresponding observed evidence. Preserve mock/live/browser distinctions and previous run history.
+
 - All four workflows retain their tool validation and gameplay non-mutation tests.
 - Automated fixtures prove input/output caps, field lengths, two-generation/four-HTTP ceilings, quota races, restart persistence, and conservative unknown-usage handling.
 - For one configured live smoke per workflow, record prompt/candidate/thinking/total tokens, cost estimate, model, status, and elapsed time. No paid live requests are part of this documentation task.

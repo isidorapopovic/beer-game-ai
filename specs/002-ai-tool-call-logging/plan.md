@@ -42,6 +42,8 @@ Feature 002 can be implemented independently of [low-cost AI](../001-low-cost-ai
 
 ## Verification and delivery
 
+Save execution results in this folder's [evidence.md](evidence.md), using its run records and task/acceptance matrices. Update it after every implementation/testing session, then mark only evidence-backed tasks complete. Include sanitized local log/export observations; private runtime transcripts remain outside Git. The feature evidence stays here rather than being moved into `docs/`.
+
 Use mock fetch, an injected clock, isolated temporary log paths, and deterministic workflow fixtures. Verify no secret leakage, no cross-request mixing, zero additional provider requests, unchanged game state, and correct rejected-versus-executed tool counts. Test safe export of backticks/HTML and crash-truncated JSONL.
 
 After implementation run `npm.cmd test`, `npm.cmd run typecheck`, and `npm.cmd run build`, followed by a local mock workflow/export smoke. Do not claim live per-user recording until verified with actual observed calls. Keep runtime data out of Git. Work on a feature branch; no merge or push to `main` is part of this package.

@@ -2,6 +2,8 @@
 
 All checkboxes describe future implementation. None is marked complete by the specification-only change.
 
+Required execution record: [evidence.md](evidence.md) in this folder. After each session, record actual outcomes and link each completed task to its evidence. Do not mark completion from plans or baseline tests alone.
+
 ## Policy and configuration
 
 - [ ] T001 Implement FR-01 model profiles and validated prices/defaults in server-only configuration.
@@ -35,7 +37,7 @@ All checkboxes describe future implementation. None is marked complete by the sp
 
 - [ ] T018 Extend evidence types/UI for model, generation/count requests, tokens, completeness, and precise estimated USD.
 - [ ] T019 Add readable rate/budget errors and consistent 500-code-point goal validation.
-- [ ] T020 Run `npm.cmd test`, `npm.cmd run typecheck`, and `npm.cmd run build`; record actual results.
+- [ ] T020 Run `npm.cmd test`, `npm.cmd run typecheck`, and `npm.cmd run build`; record actual commands, exit codes, test counts, and failures in [evidence.md](evidence.md).
 - [ ] T021 Recheck model availability, prices, thinking configuration, and count-token pricing against official docs.
 - [ ] T022 When separately configured/authorized, run one live smoke per workflow; record actual usage and validate proposed budgets.
-- [ ] T023 Update setup/evidence docs with observed results and remaining limitations. Keep feature work off `main`; do not push without instruction.
+- [ ] T023 Finalize this folder's [evidence.md](evidence.md): task mapping, changed files/commits, workflow observations, limits/usage, browser/live status, failures, and acceptance conclusion; update setup docs. Keep feature work off `main`; do not push without instruction.

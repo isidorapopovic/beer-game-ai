@@ -45,6 +45,8 @@ These are future implementation commits, not commits already made on the documen
 
 ## Test strategy
 
+Save execution results in this folder's [evidence.md](evidence.md), using its run records and task/acceptance matrices. Update it after every implementation/testing session, then mark only evidence-backed tasks complete. Keep failures, skipped checks, and live/browser limitations explicit. The feature evidence stays here rather than being moved into `docs/`.
+
 Extend the existing Node tests; do not use provider credentials in deterministic tests. Inject fetch, clock, and ledger path for boundary coverage. Assert zero generation requests for invalid input, exhausted admission, oversized prompts, and unavailable configuration. Distinguish token-count HTTP traffic from generation calls.
 
 Run the existing 79-test baseline after implementation along with new policy tests, typecheck, and production build. Use `npm.cmd run test:live` only in the later implementation verification, with configured credentials and clear paid-usage authorization. No paid API call is needed to review these documents.

@@ -74,6 +74,8 @@ As the project owner, I can export captured events into the format in [log-templ
 
 ## Success criteria
 
+Execution evidence must be maintained in [evidence.md](evidence.md) in this same feature folder. After each implementation session, record actual changes, commands/results, task-to-evidence mapping, sanitized workflow/log/export observations, failures, and acceptance status. Do not mark tasks complete or claim feature acceptance without corresponding observed evidence. This implementation evidence is separate from [the activity-log template](log-template.md) and private runtime logs.
+
 - Mock success and failure tests cover all four workflows and verify exact safe input/tool/final-output correlation.
 - Tests verify timestamps, event ordering, redaction, unknown identity/usage, safe Markdown rendering, restart handling, and record/storage limits.
 - Logging adds zero provider calls and does not mutate gameplay or weaken existing tool validation.
