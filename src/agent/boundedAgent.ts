@@ -1,7 +1,7 @@
 export const AGENT_LIMITS = {
-  maxSteps: 4,
-  maxToolCalls: 2,
-  maxRetriesPerStep: 1,
+  maxSteps: 2,
+  maxToolCalls: 1,
+  maxRetriesPerStep: 0,
   totalDeadlineMs: 20_000,
   maxToolResultBytes: 50_000,
 } as const;
@@ -93,6 +93,7 @@ export type RunExecutionResult = {
   stepCount: number;
   toolCallCount: number;
   finalOutput?: Record<string, unknown>;
+  validationIssue?: string;
   evidence?: RunEvidence;
   run: AgentRunState;
 };
@@ -716,10 +717,13 @@ export class BoundedAgentOrchestrator {
         secondProposal = validateToolProposal(secondResponse);
       } catch (error) {
         const message = error instanceof Error ? error.message : "Model returned invalid second-step output.";
+        const timedOut = error instanceof DeadlineExceededError;
+        const status: RunStatus = timedOut ? "stopped" : "failed";
+        const stopReason: StopReason = timedOut ? "deadline" : "invalid_model_proposal";
         const evidence = buildRunEvidence({
           run: workingRun,
-          status: "failed",
-          stopReason: "invalid_model_proposal",
+          status,
+          stopReason,
           stepCount: workingRun.stepCount + 1,
           toolCallCount: workingRun.toolCallCount,
           providersAttempted,
@@ -730,15 +734,15 @@ export class BoundedAgentOrchestrator {
         return {
           runId: workingRun.runId,
           workflow: workingRun.workflow,
-          status: "failed",
-          stopReason: "invalid_model_proposal",
+          status,
+          stopReason,
           stepCount: workingRun.stepCount + 1,
           toolCallCount: workingRun.toolCallCount,
           evidence,
           run: {
             ...workingRun,
-            status: "failed",
-            stopReason: "invalid_model_proposal",
+            status,
+            stopReason,
             recentActions: [...workingRun.recentActions, `second_step_invalid:${message}`],
           },
         };

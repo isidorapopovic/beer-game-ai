@@ -6,6 +6,7 @@ import {
   type ToolDescriptor,
 } from "./boundedAgent.ts";
 import type { GameState } from "../game/gameEngine.ts";
+import { boundedText, boundedItems } from "./aiLimits.ts";
 
 export type ScenarioType = "stable" | "growth" | "seasonal" | "volatile";
 export type ScenarioDifficulty = "easy" | "medium" | "hard";
@@ -93,6 +94,9 @@ export function normalizeScenarioSelectionResult(input: unknown): ScenarioSelect
   }
 
   const { summary, scenario, difficulty, explanation, evidence, confidence, completed } = input;
+  if (summary !== undefined) boundedText(summary, 240, "Summary");
+  boundedText(explanation, 240, "Explanation");
+  boundedItems(evidence, 2, "Evidence");
 
   if (scenario !== "stable" && scenario !== "growth" && scenario !== "seasonal" && scenario !== "volatile") {
     throw new Error("Scenario selection scenario must be a valid approved scenario.");
@@ -111,6 +115,7 @@ export function normalizeScenarioSelectionResult(input: unknown): ScenarioSelect
   }
 
   const normalizedEvidence = evidence.map((item) => {
+    if (isPlainObject(item)) boundedText(item.fact, 160, "Evidence fact");
     if (!isPlainObject(item) || item.source !== "allowed_scenarios" || typeof item.fact !== "string") {
       throw new Error("Scenario evidence must contain allowed_scenarios facts.");
     }

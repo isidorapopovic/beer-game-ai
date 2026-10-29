@@ -1,5 +1,6 @@
 import { BoundedAgentOrchestrator, AGENT_LIMITS, type AgentRunState, type RunExecutionResult, type StopReason, type ToolDescriptor, type WorkflowId } from "./boundedAgent.ts";
 import type { GameState } from "../game/gameEngine.ts";
+import { boundedText, boundedItems } from "./aiLimits.ts";
 
 export type DecisionCoachEvidence = {
   source: "game_state";
@@ -50,6 +51,9 @@ export function normalizeDecisionCoachResult(input: unknown): DecisionCoachResul
   }
 
   const result = input as Record<string, unknown>;
+  boundedText(result.summary, 240, "Summary");
+  boundedText(result.recommendation, 240, "Recommendation");
+  boundedItems(result.evidence, 2, "Evidence");
 
   if (typeof result.summary !== "string" || result.summary.trim().length === 0) {
     throw new Error("Decision coach summary is required.");
@@ -77,6 +81,7 @@ export function normalizeDecisionCoachResult(input: unknown): DecisionCoachResul
     }
 
     const item = entry as Record<string, unknown>;
+    boundedText(item.fact, 160, "Evidence fact");
 
     if (item.source !== "game_state" || typeof item.fact !== "string") {
       throw new Error("Each evidence item must have a valid game_state fact.");

@@ -141,7 +141,7 @@ test("finding that references a nonexistent week is rejected", async () => {
   assert.equal(result.stopReason, "invalid_final_result");
 });
 
-test("analysis rejects more than six findings", async () => {
+test("analysis rejects more than three findings", async () => {
   const model = modelCallbacks((history) => ({
     ...validAnalysis(history),
     findings: Array(7).fill(validAnalysis(history).findings[0]),
@@ -227,6 +227,6 @@ test("analyst cannot loop into another tool request", async () => {
   });
 
   assert.equal(result.status, "stopped");
-  assert.equal(result.stopReason, "step_limit");
+  assert.equal(result.stopReason, "tool_call_limit");
   assert.equal(result.toolCallCount, 1);
 });

@@ -271,6 +271,17 @@ test("tool call limit blocks additional execution", async () => {
   assert.equal(result.toolCallCount, 1);
 });
 
+test("second model deadline is reported as deadline rather than malformed output", async () => {
+  const orchestrator = new BoundedAgentOrchestrator({ registry: toolRegistry, workflow: "decision_coach" });
+  const run = orchestrator.createRun({ goal: "check final deadline", deadlineAt: new Date(Date.now() + 50).toISOString() });
+  const result = await orchestrator.executeRun({ run,
+    modelStep: async () => ({ kind: "tool_request", toolRequest: { name: "getCurrentGameState", arguments: {} } }),
+    modelStep2: async () => { await new Promise(resolve => setTimeout(resolve, 100)); return { kind: "refusal" }; },
+  });
+  assert.equal(result.status, "stopped"); assert.equal(result.stopReason, "deadline");
+  assert.equal(result.toolCallCount, 1);
+});
+
 test("final result validation rejects invalid schema", async () => {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: toolRegistry,
@@ -324,6 +335,8 @@ test("repeated tool requests are stopped as repeated_action", async () => {
   const orchestrator = new BoundedAgentOrchestrator({
     registry: toolRegistry,
     workflow: "decision_coach",
+    // Exercise duplicate detection independently from the stricter default one-tool limit.
+    limits: { ...AGENT_LIMITS, maxToolCalls: 2 },
   });
 
   const run = orchestrator.createRun({

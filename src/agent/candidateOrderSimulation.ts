@@ -7,6 +7,7 @@ import {
 } from "./boundedAgent.ts";
 import { getOrderArrivalWeek, submitOrder } from "../game/gameEngine.ts";
 import type { GameState } from "../game/gameEngine.ts";
+import { boundedText, boundedItems } from "./aiLimits.ts";
 
 export type CandidateOrderSimulationResult = {
   orderQuantity: number;
@@ -109,6 +110,9 @@ export function normalizeCandidateOrderAdvice(
   if (!isPlainObject(input)) {
     throw new Error("Candidate order advice must be an object.");
   }
+  boundedText(input.summary, 240, "Summary");
+  boundedText(input.recommendation, 240, "Recommendation");
+  boundedItems(input.evidence, 2, "Evidence");
 
   if (typeof input.summary !== "string" || input.summary.trim().length === 0) {
     throw new Error("Candidate order summary is required.");
@@ -133,6 +137,7 @@ export function normalizeCandidateOrderAdvice(
     throw new Error("Candidate order evidence must be an array.");
   }
   const evidence = input.evidence.map((entry) => {
+    if (isPlainObject(entry)) boundedText(entry.fact, 160, "Evidence fact");
     if (!isPlainObject(entry)
       || entry.source !== "candidate_order_simulation"
       || typeof entry.fact !== "string"
@@ -205,9 +210,7 @@ export async function executeCandidateOrderSimulation({
   }
 
   try {
-    const verifiedSimulation = simulateCandidateOrder(state, {
-      orderQuantity: result.finalOutput.recommendedOrderQuantity,
-    });
+    const verifiedSimulation = result.run.lastToolResult as CandidateOrderSimulationResult;
     return {
       ...result,
       finalOutput: normalizeCandidateOrderAdvice(result.finalOutput, verifiedSimulation),

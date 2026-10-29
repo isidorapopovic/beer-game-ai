@@ -7,6 +7,7 @@ import {
 } from "./boundedAgent.ts";
 import { getGameSummary } from "../game/gameEngine.ts";
 import type { GameState } from "../game/gameEngine.ts";
+import { boundedText, boundedItems } from "./aiLimits.ts";
 
 export type GameHistoryWeek = {
   week: number;
@@ -155,11 +156,15 @@ export function normalizePostGameAnalysis(
   if (!isPlainObject(input)) {
     throw new Error("Post-game analysis must be an object.");
   }
+  boundedText(input.summary, 240, "Summary");
+  boundedItems(input.findings, 3, "Findings");
+  boundedItems(input.nextGameAdvice, 2, "Advice");
+  input.nextGameAdvice.forEach(item => boundedText(item, 160, "Advice item"));
   if (typeof input.summary !== "string" || input.summary.trim().length === 0) {
     throw new Error("Post-game summary is required.");
   }
-  if (!Array.isArray(input.findings) || input.findings.length === 0 || input.findings.length > 6) {
-    throw new Error("Post-game analysis must contain between one and six findings.");
+  if (!Array.isArray(input.findings) || input.findings.length === 0 || input.findings.length > 3) {
+    throw new Error("Post-game analysis must contain between one and three findings.");
   }
 
   const weekByNumber = new Map(history.weeks.map((week) => [week.week, week]));
@@ -173,6 +178,12 @@ export function normalizePostGameAnalysis(
   ]));
 
   const findings = input.findings.map((entry): GameAnalysisFinding => {
+    if (isPlainObject(entry)) {
+      boundedText(entry.title, 80, "Finding title");
+      boundedText(entry.explanation, 240, "Finding explanation");
+      boundedItems(entry.evidence, 2, "Finding evidence");
+      entry.evidence.forEach(item => { if (isPlainObject(item)) boundedText(item.fact, 160, "Evidence fact"); });
+    }
     if (!isPlainObject(entry)
       || typeof entry.type !== "string"
       || !FINDING_TYPES.has(entry.type as GameAnalysisFindingType)
@@ -219,9 +230,9 @@ export function normalizePostGameAnalysis(
     };
   });
 
-  if (!Array.isArray(input.nextGameAdvice) || input.nextGameAdvice.length === 0 || input.nextGameAdvice.length > 4
+  if (!Array.isArray(input.nextGameAdvice) || input.nextGameAdvice.length === 0 || input.nextGameAdvice.length > 2
     || input.nextGameAdvice.some((advice) => typeof advice !== "string" || advice.trim().length === 0)) {
-    throw new Error("Next-game advice must contain one to four non-empty items.");
+    throw new Error("Next-game advice must contain one to two non-empty items.");
   }
   if (input.confidence !== "low" && input.confidence !== "medium" && input.confidence !== "high") {
     throw new Error("Post-game confidence must be low, medium, or high.");
@@ -318,11 +329,13 @@ export async function executeGameAnalyst({
       ...result,
       finalOutput: normalizePostGameAnalysis(result.finalOutput, history),
     };
-  } catch {
+  } catch (error) {
     return {
       ...result,
       status: "failed",
       stopReason: "invalid_final_result",
+      // These are fixed messages from our own validators, never provider error bodies.
+      validationIssue: error instanceof Error ? error.message : "Analysis validation failed.",
       finalOutput: undefined,
       run: { ...result.run, status: "failed", stopReason: "invalid_final_result" },
     };

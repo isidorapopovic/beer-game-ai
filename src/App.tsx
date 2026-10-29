@@ -10,6 +10,7 @@ import type { DecisionCoachResult } from "./agent/decisionCoach";
 import type { PostGameAnalysisResult } from "./agent/gameAnalyst";
 import { generateScenarioDemand, type ScenarioDifficulty, type ScenarioType, type ScenarioSelectionResult } from "./agent/scenarioGenerator";
 import { requestAgent, type AgentEvidence } from "./agent/agentClient";
+import { AiUsageEvidence } from "./agent/AiUsageEvidence";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -72,6 +73,7 @@ function App() {
 
     const requestedState = gameState;
     setCandidateLoading(true);
+    setAgentEvidence(null);
     setCandidateAdvice(null);
     setCandidateError("");
 
@@ -80,7 +82,7 @@ function App() {
       setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
+        throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setCandidateAdvice(result.finalOutput);
     } catch (error) {
@@ -97,6 +99,7 @@ function App() {
 
     const requestedState = gameState;
     setDecisionCoachLoading(true);
+    setAgentEvidence(null);
     setDecisionCoachResult(null);
     setDecisionCoachError("");
 
@@ -105,7 +108,7 @@ function App() {
       setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
+        throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setDecisionCoachResult(result.finalOutput);
     } catch (error) {
@@ -118,6 +121,7 @@ function App() {
   async function handleGenerateScenario() {
     if (scenarioLoading || (!gameState?.isComplete && gameState?.history.length)) return;
     setScenarioLoading(true);
+    setAgentEvidence(null);
     setScenarioSelection(null);
     setScenarioError("");
 
@@ -127,7 +131,7 @@ function App() {
       setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
+        throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
 
       setScenarioSelection(result.finalOutput);
@@ -157,6 +161,7 @@ function App() {
 
     const completedState = gameState;
     setAnalysisLoading(true);
+    setAgentEvidence(null);
     setPostGameAnalysis(null);
     setAnalysisError("");
 
@@ -165,7 +170,7 @@ function App() {
       setAgentEvidence(result.evidence);
 
       if (result.status !== "completed" || !result.finalOutput) {
-        throw new Error(`AI workflow ${result.status}: ${result.stopReason}.`);
+        throw new Error(result.error || `AI workflow ${result.status}: ${result.stopReason}.`);
       }
       setPostGameAnalysis(result.finalOutput);
     } catch (error) {
@@ -569,12 +574,7 @@ function App() {
         </section>
       )}
 
-      {agentEvidence && (
-        <section aria-live="polite" className="scenario-panel">
-          <p>AI status: {agentEvidence.status} · {agentEvidence.stopReason}</p>
-          <p>Provider: {agentEvidence.provider} · Model calls: {agentEvidence.modelCalls} · Tool calls: {agentEvidence.toolCallCount} · Steps: {agentEvidence.stepCount}</p>
-        </section>
-      )}
+      {agentEvidence && <AiUsageEvidence evidence={agentEvidence} />}
       <footer className="footer-line">
         <span>Retailer</span>
         <span>Week {gameState.currentWeek} of {gameState.config.totalWeeks}</span>
