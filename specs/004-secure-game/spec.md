@@ -1,7 +1,7 @@
 # Specifikacija 004: zabrane i ograničenja za AI Decision Coach
 
 Datum: 2026-10-29. Polazno stanje: `d87bc24`.
-Status: **implementirano i lokalno provereno** na feature grani. Zabrane su
+Status: **implementirano, provereno i objavljeno na main**; [delivery](delivery.md). Zabrane su
 napisane pre novih testova; izvorni tekst je sačuvan u [policy-before.md](policy-before.md).
 Kolone „Sada” u početnim tabelama opisuju polazni kod `d87bc24`, a ne završno stanje.
 Završne razlike i dokazi su u odeljku 7 i [EVIDENCE_W08.md](EVIDENCE_W08.md).

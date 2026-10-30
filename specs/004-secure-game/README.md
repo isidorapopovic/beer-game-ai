@@ -2,13 +2,14 @@
 
 Datum: 2026-10-29. Početni commit: `d87bc24`, grana `main`.
 
-Status: **implementirano i lokalno provereno** na grani
-`feature/004-secure-decision-coach`, nakon naknadnog odobrenja implementacije.
+Status: **implementirano, provereno i pushovano na main**. Implementacija
+[8e7d165](https://github.com/isidorapopovic/beer-game-ai/commit/8e7d16594a3d94a5e9529457ab31125c155c3043)
+nastala je na grani `feature/004-secure-decision-coach`.
 500 testova i 54 W08 security testa prolaze uz verzionisane input-e u stvarnom
 Chrome-u, DOM/CSP/stale-advice dokaz, novi kombinovani T17 i audit sa 0 nalaza.
 S15/S16 su zatvoreni. Demo je pripremljen; stvarna proba/odbrana NOT RUN.
 Lični doprinos preskočen je na zahtev korisnika. Nema live AI poziva.
-Rad je necommitovan/nepushovan; main nije menjan.
+Objava na GitHub main je potvrđena; detalji su u [delivery.md](delivery.md).
 
 Za domaći je izabran `decision_coach`, sa jedinim alatom
 `getCurrentGameState({})`. Ostala tri toka ostaju van implementacionog opsega;
@@ -21,6 +22,7 @@ zajedničke serverske kvote i dalje moraju sprečiti zaobilaženje promenom toka
 - [Zadaci i preostali lični doprinos](tasks.md)
 - [Provera svih zahteva T00–T17 i otvorenih stavki](requirements-review.md)
 - [Scenario od osam minuta i individualne varijante](demo-8-minuta.md)
+- [Potvrda commit-a, spajanja i GitHub objave](delivery.md)
 - [Najnoviji izvršeni dokazi S15/S16 i završne provere](completion-evidence.md)
 - [W08 evidencija - pre/posle i ograničenja](EVIDENCE_W08.md)
 - [Izvorna politika pre implementacije](policy-before.md)

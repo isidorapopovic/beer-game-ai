@@ -3,10 +3,10 @@
   "date": "2026-10-29",
   "timezone": "Europe/Budapest",
   "baseCommit": "d87bc24",
-  "branch": "feature/004-secure-decision-coach",
-  "implementationCommit": null,
-  "pushed": false,
-  "mainChanged": false,
+  "branch": "main",
+  "implementationCommit": "8e7d16594a3d94a5e9529457ab31125c155c3043",
+  "pushed": true,
+  "mainChanged": true,
   "actualLiveAiCalls": 0,
   "baseline": {
     "tests": 446,
@@ -956,6 +956,34 @@
       "matches": 0
     },
     "liveProviderCalls": 0,
-    "mainPublication": "PENDING"
+    "mainPublication": "IMPLEMENTATION_PUBLISHED_REMOTE_VERIFIED"
+  },
+  "implementationBranch": "feature/004-secure-decision-coach",
+  "publication": {
+    "date": "2026-10-30",
+    "timezone": "Europe/Budapest",
+    "repository": "https://github.com/isidorapopovic/beer-game-ai",
+    "sourceBranch": "feature/004-secure-decision-coach",
+    "targetBranch": "main",
+    "implementationCommit": "8e7d16594a3d94a5e9529457ab31125c155c3043",
+    "merge": "fast-forward",
+    "pushExitCode": 0,
+    "verifiedRemoteImplementationCommit": "8e7d16594a3d94a5e9529457ab31125c155c3043",
+    "verificationCommand": "git ls-remote origin refs/heads/main",
+    "documentationRecord": "delivery.md",
+    "documentationFollowUp": "Separate documentation commit contains this publication record",
+    "testsRerun": {
+      "passed": 500,
+      "failed": 0,
+      "skipped": 0
+    },
+    "buildRerun": "PASS includes TypeScript",
+    "liveProviderCalls": 0,
+    "documentChecks": {
+      "relativeLinks": 142,
+      "brokenLinks": 0,
+      "jsonParse": "PASS",
+      "followUpRuntimeChanges": false
+    }
   }
 }

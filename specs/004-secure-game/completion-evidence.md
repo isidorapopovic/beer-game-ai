@@ -141,3 +141,11 @@ pretvara izmerenu probu od 480 s ili individualnu odbranu u izvršene događaje:
 S18/S19 ostaju NOT RUN, za stvarne učesnike. Tehnički deo S14 je završen, lični
 deo nije izmišljen. Ograničenja lokalne igre, anonimnog scope-a i mock modela
 ostaju ista.
+
+## Naknadna objava na main
+
+Na izričit korisnički zahtev implementacija `8e7d165` je commitovana, spojena
+fast-forward i pushovana na GitHub main. Ponovljeni testovi 500/500 i production
+build prolaze; remote implementation SHA je potvrđen. [delivery.md](delivery.md)
+sadrži komande i granice dokaza. Prethodna rečenica da commit/push nisu deo
+ovog izvršenja ostaje istorijski zapis pre zasebnog zahteva za objavu.

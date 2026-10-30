@@ -1,5 +1,9 @@
 # W08: šta je postojalo, šta je dodato i šta je stvarno provereno
 
+Aktuelna isporuka: implementacija `8e7d165` je spojena i pushovana na GitHub
+main; remote SHA je potvrđen. [Potvrda isporuke](delivery.md). Raniji zapisi
+necommitovanog rada su istorija odgovarajućih sesija.
+
 ## Najnovije izvršenje 2026-10-30
 
 **500/500 testova, 54/54 security testa, typecheck/build/UI/logging/sentinel i
