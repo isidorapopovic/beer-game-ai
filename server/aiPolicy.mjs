@@ -15,6 +15,7 @@ export const PROPOSAL_BUDGET = Object.freeze({ input: 768, output: 128 });
 export const HTTP_BODY_BYTES = 20_000;
 export const PROVIDER_BODY_BYTES = 64_000;
 export const JSON_TEXT_BYTES = 12_000;
+export const PROVIDER_TIMEOUT_MS = 8_000;
 
 export class AiPolicyError extends Error {
   constructor(code, message, status = 503, retryAfter) {
@@ -39,7 +40,7 @@ export function readAiPolicy(env = process.env) {
   return Object.freeze({ model, profile: MODEL_PROFILES[model], dailyBudgetUsd,
     ledgerPath: env.AI_USAGE_LEDGER_PATH || '.local/ai-usage.json',
     reconcileVerified: env.AI_COST_RECONCILIATION_VERIFIED === 'true',
-    maxActive: 1, perMinute: 6, perDay: 100 });
+    maxActive: 2, perMinute: 6, perDay: 100 });
 }
 
 export function estimateCost(profile, prompt, candidates, thoughts) {

@@ -26,9 +26,19 @@ try {
   for (const [workflow, snapshot, goal] of cases) {
     if (selected && !selected.includes(workflow)) continue;
     const before = structuredClone(snapshot);
+    let coachContext;
+    if (workflow === 'decision_coach') {
+      const contextResponse = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/coach-context`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: snapshot }),
+      });
+      coachContext = (await contextResponse.json()).coachContext;
+      if (!contextResponse.ok) throw new Error('Coach context unavailable.');
+    }
+    const taskInput = workflow === 'candidate_order_simulation' ? { orderQuantity: 9 }
+      : workflow === 'scenario_generator' ? { scenario: 'growth', difficulty: 'hard' } : {};
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/run`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workflow, state: snapshot, goal }), signal: AbortSignal.timeout(25_000),
+      body: JSON.stringify({ workflow, state: snapshot, goal, taskInput, coachContext }), signal: AbortSignal.timeout(25_000),
     });
     const result = await response.json();
     const record = { at: new Date().toISOString(), mode: 'live', workflow, goal, model: policy.model,

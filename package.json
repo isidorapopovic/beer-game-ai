@@ -9,9 +9,15 @@
     "typecheck": "tsc -b --pretty false",
     "test": "node --test src/game/gameEngine.test.mjs src/aiHint/aiHintFlow.test.mjs src/agent/boundedAgent.test.mjs src/agent/decisionCoach.test.mjs src/agent/candidateOrderSimulation.test.mjs src/agent/gameAnalyst.test.mjs src/agent/scenarioGenerator.test.mjs server/*.test.mjs",
     "preview": "vite preview",
+    "serve": "node --env-file-if-exists=.env server/secureApp.mjs",
     "agent:dev": "node --env-file-if-exists=.env server/index.mjs",
     "test:live": "node --env-file-if-exists=.env server/liveSmoke.mjs",
     "test:ui": "node server/uiSmoke.mjs",
+    "test:security": "node --test server/coachSecurity.test.mjs server/secureApp.test.mjs",
+    "test:security:smoke": "node server/securitySmoke.mjs",
+    "security:browser": "node server/securityBrowserFixture.mjs",
+    "security:browser:verify": "node server/verifySecurityBrowser.mjs",
+    "test:security:browser": "node server/verifySecurityBrowser.mjs --require-automation",
     "logs:export": "node server/exportAiToolCallLog.mjs",
     "test:logging": "node server/loggingSmoke.mjs"
   },
@@ -24,6 +30,6 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "^5.9.0",
-    "vite": "^7.0.0"
+    "vite": "^7.3.7"
   }
 }

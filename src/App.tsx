@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import {
   createGameState,
   getGameSummary,
@@ -9,7 +9,7 @@ import type { CandidateOrderAdviceResult } from "./agent/candidateOrderSimulatio
 import type { DecisionCoachResult } from "./agent/decisionCoach";
 import type { PostGameAnalysisResult } from "./agent/gameAnalyst";
 import { generateScenarioDemand, type ScenarioDifficulty, type ScenarioType, type ScenarioSelectionResult } from "./agent/scenarioGenerator";
-import { requestAgent, AgentRequestError, type ActivityLoggingStatus, type AgentEvidence } from "./agent/agentClient";
+import { requestAgent, requestCoachContext, AgentRequestError, type ActivityLoggingStatus, type AgentEvidence } from "./agent/agentClient";
 import { AiActivityLogging } from "./agent/AiActivityLogging";
 import { validateParticipantLabel } from "./agent/participantContext";
 import { AiUsageEvidence } from "./agent/AiUsageEvidence";
@@ -49,6 +49,8 @@ function App() {
   const [decisionCoachResult, setDecisionCoachResult] = useState<DecisionCoachResult | null>(null);
   const [decisionCoachError, setDecisionCoachError] = useState("");
   const [decisionCoachLoading, setDecisionCoachLoading] = useState(false);
+  const coachContext = useRef<string | undefined>(undefined);
+  const [coachRemaining, setCoachRemaining] = useState<number | undefined>(undefined);
   const [postGameAnalysis, setPostGameAnalysis] = useState<PostGameAnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState("");
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -115,7 +117,9 @@ function App() {
     setDecisionCoachError("");
 
     try {
-      const result = await requestAgent<DecisionCoachResult>("decision_coach", requestedState, `How much should I order this week and why?`, participantLabel);
+      coachContext.current ??= await requestCoachContext(requestedState);
+      const result = await requestAgent<DecisionCoachResult>("decision_coach", requestedState, `How much should I order this week and why?`, participantLabel, undefined, coachContext.current);
+      setCoachRemaining(result.coachRemaining);
       setAgentEvidence(result.evidence);
       setActivityLogging(result.logging ?? null);
 
@@ -168,6 +172,7 @@ function App() {
     setCandidateAdvice(null); setCandidateError(""); setDecisionCoachResult(null);
     setDecisionCoachError(""); setPostGameAnalysis(null); setAnalysisError("");
     setScenarioSelection(null); setAgentEvidence(null);
+    coachContext.current = undefined; setCoachRemaining(undefined);
   }
 
   async function handleAnalyzeGame() {
@@ -426,6 +431,7 @@ function App() {
           >
             {decisionCoachLoading ? "Consulting decision coach..." : "AI Decision Coach"}
           </button>
+          {coachRemaining !== undefined && <p>Coach requests remaining this game: {coachRemaining}</p>}
           {(decisionCoachResult || decisionCoachError) && (
             <section className="decision-coach" aria-live="polite" role="status">
               <p className="eyebrow">Decision coach · bounded flow</p>

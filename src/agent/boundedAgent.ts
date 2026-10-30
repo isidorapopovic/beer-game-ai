@@ -365,44 +365,38 @@ function validateToolArguments(args: unknown, argsSchema: unknown): void {
   }
 }
 
+type ResultSchema = {
+  type?: string; required?: string[]; properties?: Record<string, ResultSchema>;
+  additionalProperties?: boolean; items?: ResultSchema; maxItems?: number;
+  minimum?: number; maximum?: number;
+};
+
 function validateToolResult(toolResult: unknown, resultSchema: unknown): unknown {
-  if (resultSchema && typeof resultSchema === "object") {
-    const schema = resultSchema as {
-      type?: string;
-      required?: string[];
-      properties?: Record<string, { type?: string }>;
-      additionalProperties?: boolean;
-    };
-
-    if (schema.type === "object" && !isPlainObject(toolResult)) {
-      throw new ValidationError("Tool output did not match the expected object schema.");
-    }
-    if (schema.type === "array" && !Array.isArray(toolResult)) {
-      throw new ValidationError("Tool output did not match the expected array schema.");
-    }
-
-    if (schema.properties) {
-      for (const [key, definition] of Object.entries(schema.properties)) {
-        const value = isPlainObject(toolResult) ? (toolResult as Record<string, unknown>)[key] : undefined;
-
-        if (schema.required?.includes(key) && value === undefined) {
-          throw new ValidationError(`Tool output field ${key} is required.`);
-        }
-
-        const type = definition?.type;
-        if (type === "number" && value !== undefined && !isFiniteNumber(value)) {
-          throw new ValidationError(`Tool output field ${key} must be a finite number.`);
-        }
-        if (type === "string" && value !== undefined && typeof value !== "string") {
-          throw new ValidationError(`Tool output field ${key} must be a string.`);
-        }
-        if (type === "array" && value !== undefined && !Array.isArray(value)) {
-          throw new ValidationError(`Tool output field ${key} must be an array.`);
-        }
-      }
-    }
+  const serialized = JSON.stringify(toolResult);
+  if (serialized === undefined || new TextEncoder().encode(serialized).byteLength > AGENT_LIMITS.maxToolResultBytes) {
+    throw new ValidationError("Tool output exceeds its size limit.");
   }
-
+  let nodes = 0;
+  const check = (value: unknown, schema: ResultSchema, depth = 0): void => {
+    if (++nodes > 12000 || depth > 16) throw new ValidationError("Tool output is too complex.");
+    if (schema.type === "number" && (!isFiniteNumber(value)
+      || schema.minimum !== undefined && value < schema.minimum
+      || schema.maximum !== undefined && value > schema.maximum)) throw new ValidationError("Invalid numeric tool output.");
+    if (schema.type === "string" && typeof value !== "string") throw new ValidationError("Invalid string tool output.");
+    if (schema.type === "object" || schema.properties) {
+      if (!isPlainObject(value)) throw new ValidationError("Invalid object tool output.");
+      for (const key of schema.required ?? []) if (!Object.hasOwn(value, key)) throw new ValidationError("Required tool output field missing.");
+      if (schema.additionalProperties === false && Object.keys(value).some(key => !Object.hasOwn(schema.properties ?? {}, key))) {
+        throw new ValidationError("Unexpected tool output field.");
+      }
+      for (const [key, definition] of Object.entries(schema.properties ?? {})) if (Object.hasOwn(value, key)) check(value[key], definition, depth + 1);
+    }
+    if (schema.type === "array") {
+      if (!Array.isArray(value) || schema.maxItems !== undefined && value.length > schema.maxItems) throw new ValidationError("Invalid array tool output.");
+      if (schema.items) for (const item of value) check(item, schema.items, depth + 1);
+    }
+  };
+  if (resultSchema && typeof resultSchema === "object") check(toolResult, resultSchema as ResultSchema);
   return toolResult;
 }
 
@@ -696,7 +690,7 @@ export class BoundedAgentOrchestrator {
         validatedResult = validateToolResult(toolResult, tool.resultSchema);
         emit("tool_execution_completed", { name: toolName, attempt: 1, result: validatedResult });
       } catch (error) {
-        emit("tool_execution_failed", { name: toolName, attempt: 1, reason: error instanceof DeadlineExceededError ? "deadline" : "invalid_tool_result", resultAvailable: toolResult !== undefined, result: toolResult ?? null });
+        emit("tool_execution_failed", { name: toolName, attempt: 1, reason: error instanceof DeadlineExceededError ? "deadline" : "invalid_tool_result", resultAvailable: toolResult !== undefined, result: null });
         const message = error instanceof Error ? error.message : "Tool execution failed.";
         const evidence = buildRunEvidence({
           run: workingRun,

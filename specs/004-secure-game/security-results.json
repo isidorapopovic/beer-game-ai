@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-29T23:45:57.976Z",
+  "status": "PASS",
+  "mode": "mock-test",
+  "actualLiveProviderCalls": 0,
+  "loadedSentinelVerified": true,
+  "deniedHttpStatus": 400,
+  "deniedProviderCalls": 0,
+  "successHttpStatus": 200,
+  "successProviderCalls": 4,
+  "toolExecutions": 1,
+  "stateUnchanged": true,
+  "sentinelAbsentFromBundleResponseModelAndSecurityLog": true,
+  "events": [
+    {
+      "event": "request.received",
+      "timestamp": "2026-10-29T23:45:57.749Z",
+      "correlationId": "req_e29a8420-b675-48d9-be65-a7f0aa322bd9",
+      "workflow": "unknown",
+      "outcome": "received",
+      "reasonCode": "RECEIVED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "context.issued",
+      "timestamp": "2026-10-29T23:45:57.831Z",
+      "correlationId": "req_e29a8420-b675-48d9-be65-a7f0aa322bd9",
+      "workflow": "decision_coach",
+      "outcome": "allowed",
+      "reasonCode": "CONTEXT_ISSUED",
+      "elapsedMs": 82,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.received",
+      "timestamp": "2026-10-29T23:45:57.881Z",
+      "correlationId": "req_ad7121bf-b0f6-46b3-87cf-2e550a2df83d",
+      "workflow": "unknown",
+      "outcome": "received",
+      "reasonCode": "RECEIVED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.denied",
+      "timestamp": "2026-10-29T23:45:57.890Z",
+      "correlationId": "req_ad7121bf-b0f6-46b3-87cf-2e550a2df83d",
+      "workflow": "unknown",
+      "outcome": "denied",
+      "reasonCode": "INVALID_INPUT",
+      "elapsedMs": 9,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.received",
+      "timestamp": "2026-10-29T23:45:57.906Z",
+      "correlationId": "req_19b2e4e9-5300-4c66-9684-25ea0e8d94f7",
+      "workflow": "unknown",
+      "outcome": "received",
+      "reasonCode": "RECEIVED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.admitted",
+      "timestamp": "2026-10-29T23:45:57.922Z",
+      "correlationId": "req_19b2e4e9-5300-4c66-9684-25ea0e8d94f7",
+      "workflow": "decision_coach",
+      "outcome": "allowed",
+      "reasonCode": "ADMITTED",
+      "elapsedMs": 16,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "agent.tool.allowed",
+      "timestamp": "2026-10-29T23:45:57.942Z",
+      "correlationId": "req_19b2e4e9-5300-4c66-9684-25ea0e8d94f7",
+      "workflow": "decision_coach",
+      "outcome": "allowed",
+      "reasonCode": "TOOL_ALLOWED",
+      "elapsedMs": 35,
+      "providerAttempts": 2,
+      "executedToolCalls": 1
+    },
+    {
+      "event": "request.finished",
+      "timestamp": "2026-10-29T23:45:57.966Z",
+      "correlationId": "req_19b2e4e9-5300-4c66-9684-25ea0e8d94f7",
+      "workflow": "decision_coach",
+      "outcome": "completed",
+      "reasonCode": "COMPLETED",
+      "elapsedMs": 60,
+      "providerAttempts": 4,
+      "executedToolCalls": 1
+    }
+  ],
+  "runtimeDirectory": ".local/spec004-security-p3PoJj"
+}

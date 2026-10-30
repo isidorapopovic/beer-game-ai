@@ -11,7 +11,7 @@ import { requestAgent, AgentRequestError } from '../src/agent/agentClient.ts';
 import { BoundedAgentOrchestrator } from '../src/agent/boundedAgent.ts';
 import { createGeminiModel } from './gemini.mjs';
 import { runWorkflow } from './workflows.mjs';
-import { fakeGemini, testEnvironment, jsonResponse, modelResponse, toolNames, taskInputFor } from './testFixtures.mjs';
+import { withCoachContext, fakeGemini, testEnvironment, jsonResponse, modelResponse, toolNames, taskInputFor } from './testFixtures.mjs';
 
 function environment(t, overrides = {}) {
   const env = testEnvironment(t);
@@ -28,8 +28,9 @@ async function start(t, env, fetchImpl) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const url = `http://127.0.0.1:${server.address().port}/api/agent/run`;
+  const contexts = new Map();
   return { url, async send(value = input()) {
-    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value) });
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(await withCoachContext(url, value, contexts)) });
     return { response, body: await response.json() };
   } };
 }
@@ -246,7 +247,7 @@ test('client cancellation aborts provider work and records cancelled rather than
   const env = environment(t); let entered; const started = new Promise(resolve => { entered = resolve; }); let calls = 0;
   const app = await start(t, env, async (_url, { signal }) => { calls++; entered(); return new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new Error('private')), { once: true })); });
   const controller = new AbortController();
-  const pending = fetch(app.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input()), signal: controller.signal }).catch(() => null);
+  const pending = fetch(app.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(await withCoachContext(app.url, input())), signal: controller.signal }).catch(() => null);
   await started; controller.abort(); await pending;
   for (let i = 0; i < 100 && !event(records(env), 'action_cancelled'); i++) await new Promise(resolve => setTimeout(resolve, 5));
   const events = records(env); assert.ok(event(events, 'action_cancel_requested')); assert.ok(event(events, 'action_cancelled'));

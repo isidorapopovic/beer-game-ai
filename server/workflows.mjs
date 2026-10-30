@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { validateGoal } from '../src/agent/aiLimits.ts';
 import { validateParticipant } from '../src/agent/participantContext.ts';
 import { validateTaskInput } from '../src/agent/taskInput.ts';
+import { isCoachContext } from './coachContexts.mjs';
 import { notifyAgent } from '../src/agent/agentEvents.ts';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
 import { executeDecisionCoach, getDecisionCoachFacts } from '../src/agent/decisionCoach.ts';
@@ -18,12 +19,13 @@ const workflows = {
 
 export function validateRequest(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)
-    || Object.keys(input).some(key => !['workflow', 'goal', 'state', 'participant', 'taskInput'].includes(key))) throw new Error('Invalid request fields.');
+    || Object.keys(input).some(key => !['workflow', 'goal', 'state', 'participant', 'taskInput', 'coachContext'].includes(key))) throw new Error('Invalid request fields.');
   if (!input || !Object.hasOwn(workflows, input.workflow)
     || typeof input.goal !== 'string') throw new Error('Invalid workflow request.');
   const goal = validateGoal(input.goal);
   const participant = validateParticipant(input.participant);
   const taskInput = validateTaskInput(input.workflow, input.taskInput);
+  if (input.coachContext !== undefined && (input.workflow !== 'decision_coach' || !isCoachContext(input.coachContext))) throw new Error('Invalid coach context.');
   const state = input.state;
   if (!state || !Array.isArray(state.demandSequence) || state.demandSequence.length !== 10
     || state.demandSequence.some(n => !Number.isInteger(n) || n < 0 || n > 100)
@@ -34,7 +36,7 @@ export function validateRequest(input) {
     canonical = submitOrder(canonical, week.order);
   }
   if (!isDeepStrictEqual(canonical, state)) throw new Error('Game state does not match canonical game rules.');
-  return { workflow: input.workflow, goal, state: canonical, participant, taskInput };
+  return { workflow: input.workflow, goal, state: canonical, participant, taskInput, coachContext: input.coachContext };
 }
 
 export async function runWorkflow(input, modelStep, { onEvent } = {}) {

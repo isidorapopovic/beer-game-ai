@@ -32,7 +32,7 @@ Status: Implemented and locally verified on 2026-10-29, except T017 browser acce
 - [x] T014 Implement M2/M3 phase and manipulation cases across all four workflows with legitimate and hostile scripted controls: encodings, repeated/contradictory/nested commands, malformed data, and multi-step scope/progression bypass attempts. Assert rejection stage, calls, and state equality.
 - [x] T015 Implement M5 temporal/state cases: unavailable past, impossible weeks, corrupted/changed history/config/status/pipeline, last-week/horizon timing, and valid alternate canonical snapshots. Document consistency versus provenance and add no archive/ownership claims.
 - [x] T016 Implement M6 concurrency/duplicate/session cases and A/B state/prompt isolation. Reuse the existing ledger/observer tests; no deduplication policy, per-user hard quota, or new state service without separate need.
-- [ ] T017 Invalidate stale week-scoped coach advice/evidence on successful progression; preserve current results on invalid submission and persisted activity history. Verify through an actual local mocked UI interaction; leave browser acceptance open if tooling is unavailable.
+- [x] T017 Invalidate stale week-scoped coach advice/evidence on successful progression; preserve current results on invalid submission and persisted activity history. Verify through an actual local mocked UI interaction; leave browser acceptance open if tooling is unavailable.
 
 ## Verification and feature-local evidence
 
@@ -40,3 +40,5 @@ Status: Implemented and locally verified on 2026-10-29, except T017 browser acce
 - [x] T019 Create/finalize `evidence.md` in this folder with per-task links, observed before/after cases, failures, commits, monitoring semantics, safe artifacts, and scoped acceptance. Update guides/indexes only as needed; keep spec 001 T022 separate and no source/runtime files from this planning session represented as implemented work.
 
 T017 remains open because browser-host discovery failed and native Chrome app approval timed out. No SSR result is substituted for actual browser acceptance.
+
+W08 follow-up: T017 actual Chrome interaction is now verified in [feature 004 evidence](../004-secure-game/implementation-evidence.md) and [browser results](../004-secure-game/browser-results.json). The earlier NOT RUN reflects the original session, not this later verification.

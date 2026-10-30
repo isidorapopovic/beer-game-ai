@@ -5,7 +5,7 @@ import { resolve, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createAgentServer } from './index.mjs';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
-import { fakeGemini, toolNames, taskInputFor } from './testFixtures.mjs';
+import { withCoachContext, fakeGemini, toolNames, taskInputFor } from './testFixtures.mjs';
 import { DEFAULT_MODEL } from './aiPolicy.mjs';
 import { readEventLog } from './exportAiToolCallLog.mjs';
 import { summarizeActivity } from './activitySummary.mjs';
@@ -34,7 +34,7 @@ try {
     const participant = { sessionId: `session_${crypto.randomUUID()}`, label: `Mock-${++index}` };
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/run`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workflow, taskInput: taskInputFor(workflow), state, goal: 'Help with this synthetic game.', participant }),
+      body: JSON.stringify(await withCoachContext(`http://127.0.0.1:${server.address().port}/api/agent/run`, { workflow, taskInput: taskInputFor(workflow), state, goal: 'Help with this synthetic game.', participant })),
     });
     const result = await response.json();
     assert.equal(result.status, 'completed'); assert.equal(result.logging.status, 'recorded');

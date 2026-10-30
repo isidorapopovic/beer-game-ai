@@ -6,6 +6,16 @@ import { DEFAULT_MODEL } from './aiPolicy.mjs';
 export const toolNames = { decision_coach: 'getCurrentGameState', candidate_order_simulation: 'simulateCandidateOrder', game_analyst: 'getGameHistory', scenario_generator: 'getAllowedScenarioTypes' };
 export const taskInputFor = workflow => workflow === 'candidate_order_simulation' ? { orderQuantity: 4 }
   : workflow === 'scenario_generator' ? { scenario: 'growth', difficulty: 'hard' } : {};
+export async function withCoachContext(url, input, cache = new Map()) {
+  if (input?.workflow !== 'decision_coach' || input.coachContext !== undefined || !input.state) return input;
+  const key = JSON.stringify(input.state);
+  if (!cache.has(key)) {
+    const response = await fetch(url.replace(/\/run$/, '/coach-context'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: input.state }) });
+    const context = await response.json(); if (!response.ok) return input;
+    cache.set(key, context.coachContext);
+  }
+  return { ...input, coachContext: cache.get(key) };
+}
 export function testEnvironment(t, overrides = {}) {
   const root = resolve('.local/tests'); mkdirSync(root, { recursive: true });
   const dir = mkdtempSync(join(root, 'ai-'));

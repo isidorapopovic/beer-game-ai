@@ -44,14 +44,24 @@ export type AgentEvidence = {
   logging?: ActivityLoggingStatus;
 };
 
-export async function requestAgent<T>(workflow: WorkflowId, state: GameState, goal: string, participantLabel?: string, taskInput?: TaskInput): Promise<{
-  status: string; stopReason: string; error?: string; finalOutput?: T; evidence: AgentEvidence; logging?: ActivityLoggingStatus;
+export async function requestCoachContext(state: GameState): Promise<string> {
+  const response = await fetch('/api/agent/coach-context', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state }), signal: AbortSignal.timeout(5_000) });
+  const result = await response.json();
+  if (!response.ok || typeof result.coachContext !== 'string' || !/^coach_[A-Za-z0-9_-]{43}$/.test(result.coachContext)) {
+    throw new Error(result.error || 'Coach context is unavailable.');
+  }
+  return result.coachContext;
+}
+
+export async function requestAgent<T>(workflow: WorkflowId, state: GameState, goal: string, participantLabel?: string, taskInput?: TaskInput, coachContext?: string): Promise<{
+  status: string; stopReason: string; error?: string; finalOutput?: T; evidence: AgentEvidence; logging?: ActivityLoggingStatus; coachRemaining?: number;
 }> {
   const validGoal = validateGoal(goal);
   const validTaskInput = validateTaskInput(workflow, taskInput);
   const response = await fetch('/api/agent/run', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ workflow, state, goal: validGoal, taskInput: validTaskInput, participant: getParticipantContext(participantLabel) }), signal: AbortSignal.timeout(25_000),
+    body: JSON.stringify({ workflow, state, goal: validGoal, taskInput: validTaskInput, coachContext, participant: getParticipantContext(participantLabel) }), signal: AbortSignal.timeout(25_000),
   });
   const result = await response.json();
   if (!response.ok) throw new AgentRequestError(result.error || 'The AI service is unavailable.', result.logging);

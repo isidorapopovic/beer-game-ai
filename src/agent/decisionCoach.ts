@@ -68,6 +68,8 @@ export function normalizeDecisionCoachResult(input: unknown, snapshot: CurrentGa
   }
 
   const result = input as Record<string, unknown>;
+  const fields = ["summary", "recommendation", "recommendedOrderQuantity", "evidence", "confidence", "completed"];
+  if (Object.keys(result).some(key => !fields.includes(key))) throw new Error("Unexpected decision coach field.");
   boundedText(result.summary, 240, "Summary");
   boundedText(result.recommendation, 240, "Recommendation");
   boundedItems(result.evidence, 2, "Evidence");
@@ -98,6 +100,7 @@ export function normalizeDecisionCoachResult(input: unknown, snapshot: CurrentGa
     }
 
     const item = entry as Record<string, unknown>;
+    if (Object.keys(item).some(key => key !== "source" && key !== "fact")) throw new Error("Unexpected coach evidence field.");
     boundedText(item.fact, 160, "Evidence fact");
 
     if (item.source !== "game_state" || typeof item.fact !== "string" || !getDecisionCoachFacts(snapshot).includes(item.fact)) {
@@ -141,9 +144,9 @@ function buildDecisionCoachRegistry(state: GameState): Record<string, ToolDescri
           currentDemand: { type: "number" },
           inventory: { type: "number" },
           backorder: { type: "number" },
-          incomingShipments: { type: "array" },
-          recentDemand: { type: "array" },
-          recentOrders: { type: "array" },
+          incomingShipments: { type: "array", maxItems: 10, items: { type: "number", minimum: 0 } },
+          recentDemand: { type: "array", maxItems: 5, items: { type: "number", minimum: 0 } },
+          recentOrders: { type: "array", maxItems: 5, items: { type: "number", minimum: 0 } },
           totalCost: { type: "number" },
         },
         required: ["week", "currentDemand", "inventory", "backorder", "incomingShipments", "recentDemand", "recentOrders", "totalCost"],

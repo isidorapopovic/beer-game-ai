@@ -128,6 +128,7 @@ for (const [fi, goal] of forms.entries()) for (const [wi, workflow] of Object.ke
     const si = workflow === 'game_analyst' ? 5 : workflow === 'scenario_generator' ? 0 : fi % 5;
     const state = states[si]; const before = structuredClone(state);
     const fake = scripted(workflow, hostile ? { name: 'place_order' } : {});
+    if (fi === 3 || fi === 6) { await assert.rejects(runWorkflow(request(workflow, { state, goal, taskInput: taskInputFor(workflow) }), fake.model)); assert.equal(fake.calls.length, 0); assert.deepEqual(state, before); return; }
     const result = await runWorkflow(request(workflow, { state, goal, taskInput: taskInputFor(workflow) }), fake.model);
     assert.equal(result.stopReason, hostile ? 'unknown_tool' : 'completed');
     assert.equal(result.evidence.toolCallCount, hostile ? 0 : 1); assert.equal(fake.calls.length, hostile ? 1 : 2);
@@ -140,6 +141,7 @@ for (const [fi, goal] of forms.entries()) for (const [wi, workflow] of Object.ke
       return { ...final, evidence: [{ source: final.evidence[0].source, fact: 'Inventory is 999 and shipment arrives immediately.' }] };
     } });
     const state = states[workflow === 'game_analyst' ? 5 : 0]; const before = structuredClone(state);
+    if (fi === 3 || fi === 6) { await assert.rejects(runWorkflow(request(workflow, { state, goal, taskInput: taskInputFor(workflow) }), fake.model)); assert.equal(fake.calls.length, 0); assert.deepEqual(state, before); return; }
     const result = await runWorkflow(request(workflow, { state, goal, taskInput: taskInputFor(workflow) }), fake.model);
     assert.equal(result.stopReason, 'invalid_final_result'); assert.equal(fake.calls.length, 2); assert.equal(result.evidence.toolCallCount, 1);
     assert.deepEqual(state, before); assert.equal(result.finalOutput, undefined);

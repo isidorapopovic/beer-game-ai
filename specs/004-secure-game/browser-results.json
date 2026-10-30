@@ -1,0 +1,301 @@
+{
+  "mode": "mock-test",
+  "observations": [
+    {
+      "stage": "initial",
+      "week": 1,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "initial",
+      "week": 1,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "coach",
+      "week": 1,
+      "coach": true,
+      "usage": true,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": true,
+      "normalTextVisible": true,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": true
+    },
+    {
+      "stage": "invalid",
+      "week": 1,
+      "coach": true,
+      "usage": true,
+      "invalid": true,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": true,
+      "normalTextVisible": true,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": true
+    },
+    {
+      "stage": "coach",
+      "week": 1,
+      "coach": true,
+      "usage": true,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": true,
+      "normalTextVisible": true,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": true
+    },
+    {
+      "stage": "advanced",
+      "week": 2,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "initial",
+      "week": 0,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "initial",
+      "week": 1,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "initial",
+      "week": 1,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "initial",
+      "week": 1,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": true,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    },
+    {
+      "stage": "coach",
+      "week": 1,
+      "coach": true,
+      "usage": true,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": false,
+      "violations": [
+        {
+          "directive": "script-src-elem",
+          "blockedURI": "inline"
+        }
+      ],
+      "payloadVisible": true,
+      "normalTextVisible": true,
+      "labelPayloadPresent": true,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": true
+    },
+    {
+      "stage": "control",
+      "week": 0,
+      "coach": false,
+      "usage": false,
+      "invalid": false,
+      "xssExecuted": false,
+      "cspExecuted": true,
+      "violations": [],
+      "payloadVisible": false,
+      "normalTextVisible": false,
+      "labelPayloadPresent": false,
+      "unsafePageDOM": 0,
+      "unsafeCoachDOM": 0,
+      "recommendationControl": false
+    }
+  ],
+  "automation": {
+    "driver": "server/securityBrowserDriver.js",
+    "events": [
+      {
+        "stage": "orders.started",
+        "status": "PASS"
+      },
+      {
+        "stage": "coach.safe",
+        "status": "PASS"
+      },
+      {
+        "stage": "invalid.preserved",
+        "status": "PASS"
+      },
+      {
+        "stage": "advanced.cleared",
+        "status": "PASS"
+      },
+      {
+        "stage": "label.started",
+        "status": "PASS"
+      },
+      {
+        "stage": "label.safe",
+        "status": "PASS"
+      },
+      {
+        "stage": "control.started",
+        "status": "PASS"
+      },
+      {
+        "stage": "complete",
+        "status": "PASS"
+      }
+    ],
+    "driverSha256": "7355e7228fb9b006d89984963ab569173444ecef08f73db788c725d7c88449ba"
+  },
+  "liveProviderCalls": 0,
+  "providerRequests": {
+    "decision_coach": 8,
+    "candidate_order_simulation": 0,
+    "game_analyst": 0,
+    "scenario_generator": 0
+  },
+  "activityEvents": 38,
+  "securityEvents": 12,
+  "sentinelInSecurityLog": false,
+  "sentinelInActivityLog": false,
+  "runtimeDirectory": ".local/spec004-browser-GO0yyU",
+  "headers": {
+    "content-security-policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; font-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "no-referrer"
+  },
+  "at": "2026-10-29T23:45:51.467Z",
+  "status": "PASS",
+  "assetSha256": {
+    "index-BcOvqyTq.css": "3d28f36100f52673ff282edd365680634490b496d394696e359a58c45711aa62",
+    "index-C7OevIO7.js": "76bef7e9673ddc3386d35558b8c527f7d1caf20d2af1aff218a995468efd9cb4"
+  },
+  "finalBuildAssetsIdentical": true,
+  "viteVersion": "7.3.7",
+  "automatedInput": true
+}

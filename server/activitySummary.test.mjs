@@ -7,7 +7,7 @@ import { validateActivityEvent, summarizeActivity } from './activitySummary.mjs'
 import { readEventLog, renderToolCallMarkdown } from './exportAiToolCallLog.mjs';
 import { createAgentServer } from './index.mjs';
 import { createGameState, submitOrder } from '../src/game/gameEngine.ts';
-import { testEnvironment, fakeGemini, jsonResponse, modelResponse } from './testFixtures.mjs';
+import { withCoachContext, testEnvironment, fakeGemini, jsonResponse, modelResponse } from './testFixtures.mjs';
 import { requestAgent } from '../src/agent/agentClient.ts';
 
 async function setup(t, { fetchImpl, env: overrides = {} } = {}) {
@@ -18,7 +18,8 @@ async function setup(t, { fetchImpl, env: overrides = {} } = {}) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => new Promise(resolve => server.close(resolve)));
   const url = `http://127.0.0.1:${server.address().port}/api/agent/run`;
   const input = { workflow: 'decision_coach', state: createGameState(), goal: 'Help.', participant: { sessionId: `session_${crypto.randomUUID()}`, label: 'Synthetic-A' } };
-  const send = async (value = input) => { const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: typeof value === 'string' ? value : JSON.stringify(value) }); return { status: response.status, body: await response.json() }; };
+  const contexts = new Map();
+  const send = async (value = input) => { const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: typeof value === 'string' ? value : JSON.stringify(await withCoachContext(url, value, contexts)) }); return { status: response.status, body: await response.json() }; };
   return { env, path, input, url, send, fake };
 }
 async function trace(t) { const app = await setup(t); assert.equal((await app.send()).body.status, 'completed'); return { ...app, events: readEventLog(app.path).events }; }
@@ -112,20 +113,24 @@ test('M6/M8 repeated legitimate requests and changed labels share global admissi
   assert.equal(summary.bySession[0].admittedObserved, 6); assert.equal(summary.bySession[0].protocolValid, 7); assert.equal(summary.bySession[0].admissionUnknown, 1);
   assert.equal(summary.bySession[0].rejected, 1); assert.equal(summary.bySession[0].completed, 6);
 });
-test('M6 concurrent A/B: one admission, no prompt/participant/state leakage; reissue after release', async t => {
+test('M6 concurrent A/B: two admissions, third busy; no prompt/participant/state leakage', async t => {
   const fake = fakeGemini('decision_coach'); let entered, release; const started = new Promise(r => { entered = r; }); const gate = new Promise(r => { release = r; });
-  let calls = 0; const app = await setup(t, { fetchImpl: async (...args) => { if (++calls === 1) { entered(); await gate; } return fake.fetchImpl(...args); } });
+  let calls = 0; const app = await setup(t, { fetchImpl: async (...args) => { if (++calls <= 2) { entered(); await gate; } return fake.fetchImpl(...args); } });
   const a = { ...app.input, goal: 'SESSION-A-ONLY', state: submitOrder(createGameState(), 51) };
   const b = { ...app.input, goal: 'SESSION-B-ONLY', participant: { ...app.input.participant, sessionId: `session_${crypto.randomUUID()}` }, state: submitOrder(createGameState(), 2.5) };
   const before = clone({ a, b }); const first = app.send(a); await started;
-  try { const second = await app.send(b); assert.equal(second.status, 429); assert.equal(second.body.code, 'AI_BUSY'); assert.equal(calls, 1); }
+  const second = app.send(b);
+  for (let i = 0; i < 100 && calls < 2; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  try { const third = await app.send(a); assert.equal(third.status, 429); assert.equal(third.body.code, 'AI_BUSY'); assert.equal(calls, 2); }
   finally { release(); }
-  assert.equal((await first).body.status, 'completed'); assert.equal(calls, 4);
-  assert.equal(JSON.stringify(fake.requests).includes('SESSION-B-ONLY'), false);
-  assert.equal((await app.send(b)).body.status, 'completed'); assert.equal(calls, 8); assert.deepEqual({ a, b }, before);
+  assert.equal((await first).body.status, 'completed'); assert.equal((await second).body.status, 'completed');
+  assert.equal(calls, 8); assert.deepEqual({ a, b }, before);
   const generations = fake.requests.filter(x => !x.url.endsWith(':countTokens'));
-  assert.ok(generations.slice(0, 2).every(x => !JSON.stringify(x).includes('SESSION-B-ONLY')));
-  assert.ok(generations.slice(2).every(x => !JSON.stringify(x).includes('SESSION-A-ONLY')));
+  const parsed = generations.map(x => JSON.parse(x.body.contents[0].parts[0].text));
+  assert.equal(parsed.filter(x => x.goal === 'SESSION-A-ONLY').length, 2);
+  assert.equal(parsed.filter(x => x.goal === 'SESSION-B-ONLY').length, 2);
+  assert.ok(parsed.filter(x => x.toolResult && x.goal === 'SESSION-A-ONLY').every(x => x.toolResult.recentOrders[0] === 51));
+  assert.ok(parsed.filter(x => x.toolResult && x.goal === 'SESSION-B-ONLY').every(x => x.toolResult.recentOrders[0] === 2.5));
 });
 test('M6 failed admitted request and wrong-phase request consume slots; no retries/provider requests for phase rejection', async t => {
   let calls = 0; const app = await setup(t, { fetchImpl: async url => { calls++; return url.endsWith(':countTokens') ? jsonResponse({ totalTokens: 100 }) : modelResponse({ kind: 'refusal' }); } });
@@ -141,7 +146,7 @@ test('M6 cancellation releases active slot for reissue; distinct admissions and 
     return fake.fetchImpl(url, options);
   } });
   const controller = new AbortController();
-  const first = fetch(app.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(app.input), signal: controller.signal });
+  const first = fetch(app.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(await withCoachContext(app.url, app.input)), signal: controller.signal });
   const rejection = assert.rejects(first); await started; controller.abort(); await rejection;
   // Wait for the server's cancellation callback, not a guessed fixed delay.
   for (let i = 0; i < 100 && !readEventLog(app.path).events.some(x => x.type === 'action_cancelled'); i++) await new Promise(resolve => setTimeout(resolve, 5));

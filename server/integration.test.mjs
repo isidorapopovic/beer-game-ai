@@ -5,7 +5,7 @@ import { createAgentServer } from './index.mjs';
 import { runWorkflow } from './workflows.mjs';
 import { createGeminiModel } from './gemini.mjs';
 import { DEFAULT_MODEL } from './aiPolicy.mjs';
-import { testEnvironment, toolNames, taskInputFor, fakeGemini, modelResponse, jsonResponse } from './testFixtures.mjs';
+import { withCoachContext, testEnvironment, toolNames, taskInputFor, fakeGemini, modelResponse, jsonResponse } from './testFixtures.mjs';
 
 for (const workflow of Object.keys(toolNames)) {
   test(`HTTP Gemini wiring: ${workflow}, two model calls, one tool, non-mutation`, async (t) => {
@@ -16,7 +16,7 @@ for (const workflow of Object.keys(toolNames)) {
     const server = createAgentServer({ env: testEnvironment(t), fetchImpl: fake.fetchImpl });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     try {
-      const response = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workflow, taskInput: taskInputFor(workflow), state, goal: 'Help me.' }) });
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/api/agent/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(await withCoachContext(`http://127.0.0.1:${server.address().port}/api/agent/run`, { workflow, taskInput: taskInputFor(workflow), state, goal: 'Help me.' })) });
       const result = await response.json(); assert.equal(response.status, 200); assert.equal(result.status, 'completed');
       assert.equal(fake.requests.length, 4);
       assert.equal(result.evidence.countTokenCalls, 2); assert.equal(result.evidence.providerHttpCalls, 4);

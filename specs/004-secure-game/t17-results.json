@@ -1,0 +1,101 @@
+{
+  "at": "2026-10-30T00:17:30.723Z",
+  "status": "PASS",
+  "mode": "mock-http-integration",
+  "actualLiveProviderCalls": 0,
+  "test": "T17 last-slot HTTP race with changed labels cannot authorize a hostile model tool",
+  "warmupAdmissions": 9,
+  "warmupProviderHttpCalls": 36,
+  "attack": {
+    "admissions": 1,
+    "quotaDenials": 1,
+    "countTokenCalls": 1,
+    "generationCalls": 1,
+    "providerHttpCalls": 2,
+    "executedTools": 0,
+    "stopReason": "unknown_tool",
+    "remaining": 0,
+    "stateUnchanged": true,
+    "ledgerEntries": 10
+  },
+  "laterBenignRequest": {
+    "httpStatus": 429,
+    "code": "COACH_GAME_LIMIT",
+    "additionalProviderCalls": 0
+  },
+  "positiveFreshContext": {
+    "status": "completed",
+    "providerHttpCalls": 4,
+    "executedTools": 1,
+    "ledgerEntries": 11
+  },
+  "totalProviderHttpCalls": 42,
+  "securityEvents": [
+    {
+      "event": "request.received",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_603e4f4d-cf62-4d41-bbcb-631ca7f5c6e1",
+      "workflow": "unknown",
+      "outcome": "received",
+      "reasonCode": "RECEIVED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.admitted",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_603e4f4d-cf62-4d41-bbcb-631ca7f5c6e1",
+      "workflow": "decision_coach",
+      "outcome": "allowed",
+      "reasonCode": "ADMITTED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.received",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_a2b2187f-42d1-4348-8581-c5c39391cce0",
+      "workflow": "unknown",
+      "outcome": "received",
+      "reasonCode": "RECEIVED",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.denied",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_a2b2187f-42d1-4348-8581-c5c39391cce0",
+      "workflow": "decision_coach",
+      "outcome": "denied",
+      "reasonCode": "COACH_GAME_LIMIT",
+      "elapsedMs": 0,
+      "providerAttempts": 0,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "agent.tool.denied",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_603e4f4d-cf62-4d41-bbcb-631ca7f5c6e1",
+      "workflow": "decision_coach",
+      "outcome": "denied",
+      "reasonCode": "TOOL_DENIED",
+      "elapsedMs": 0,
+      "providerAttempts": 2,
+      "executedToolCalls": 0
+    },
+    {
+      "event": "request.finished",
+      "timestamp": "2026-10-30T10:10:00.010Z",
+      "correlationId": "req_603e4f4d-cf62-4d41-bbcb-631ca7f5c6e1",
+      "workflow": "decision_coach",
+      "outcome": "failed",
+      "reasonCode": "REJECTED",
+      "elapsedMs": 0,
+      "providerAttempts": 2,
+      "executedToolCalls": 0
+    }
+  ]
+}

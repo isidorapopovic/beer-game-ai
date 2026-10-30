@@ -2,7 +2,8 @@
 export const GOAL_CODE_POINTS = 500;
 
 export function validateGoal(goal: unknown): string {
-  if (typeof goal !== "string" || !goal.trim() || [...goal.trim()].length > GOAL_CODE_POINTS) {
+  if (typeof goal !== "string" || !goal.trim() || [...goal.trim()].length > GOAL_CODE_POINTS
+    || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u.test(goal)) {
     throw new Error("Enter a goal between 1 and 500 characters.");
   }
   return goal.trim();

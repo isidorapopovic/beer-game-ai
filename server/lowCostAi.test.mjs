@@ -14,7 +14,7 @@ import { normalizeDecisionCoachResult, getCurrentGameStateTool } from '../src/ag
 import { normalizeCandidateOrderAdvice, simulateCandidateOrder, executeCandidateOrderSimulation } from '../src/agent/candidateOrderSimulation.ts';
 import { normalizePostGameAnalysis, getGameHistoryTool } from '../src/agent/gameAnalyst.ts';
 import { normalizeScenarioSelectionResult } from '../src/agent/scenarioGenerator.ts';
-import { testEnvironment, finalFor, fakeGemini, jsonResponse, modelResponse } from './testFixtures.mjs';
+import { withCoachContext, testEnvironment, finalFor, fakeGemini, jsonResponse, modelResponse } from './testFixtures.mjs';
 
 const args = (extra = {}) => ({ instructions: 'Return JSON.', input: { goal: 'Help.' }, deadlineAt: new Date(Date.now() + 5000).toISOString(), ...extra });
 const createModel = fetchImpl => createGeminiModel({ apiKey: 'test-secret', fetchImpl });
@@ -25,8 +25,9 @@ async function startServer(t, options) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const url = `http://127.0.0.1:${server.address().port}/api/agent/run`;
+  const contexts = new Map();
   return async (input = request()) => {
-    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) });
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(await withCoachContext(url, input, contexts)) });
     return { response, body: await response.json() };
   };
 }
@@ -202,9 +203,11 @@ test('ledger reserves durably before dispatch and shares concurrency guard', t =
   const a = createUsageLedger({ policy }); const b = createUsageLedger({ policy });
   const ticket = a.admit('decision_coach');
   const entries = Object.values(ledgerData(env).days).flat(); assert.equal(entries.length, 1); assert.ok(entries[0].charge > 0);
+  const second = b.admit('decision_coach');
   assert.throws(() => b.admit('decision_coach'), error => error.code === 'AI_BUSY');
+  b.finish(second);
   a.finish(ticket, { usageStatus: 'unknown', estimatedUsd: null });
-  const next = b.admit('decision_coach'); b.finish(next); assert.equal(Object.values(ledgerData(env).days).flat().length, 2);
+  const next = b.admit('decision_coach'); b.finish(next); assert.equal(Object.values(ledgerData(env).days).flat().length, 3);
 });
 
 test('ledger rolling minute survives restart and consumes failed admissions', t => {
@@ -283,17 +286,19 @@ test('HTTP unavailable model makes zero requests; budget rejection supplies Retr
   assert.equal(result.body.code, 'BUDGET_LIMIT'); assert.ok(result.response.headers.get('retry-after')); assert.equal(calls, 0);
 });
 
-test('HTTP concurrent admissions have one winner; busy makes zero extra provider calls', async t => {
+test('HTTP concurrent admissions have two winners; third busy makes zero extra provider calls', async t => {
   const fake = fakeGemini('decision_coach'); let release; let entered;
   const started = new Promise(resolve => { entered = resolve; });
   const gate = new Promise(resolve => { release = resolve; });
   let requests = 0;
   const send = await startServer(t, { env: testEnvironment(t), fetchImpl: async (...input) => {
-    requests++; if (requests === 1) { entered(); await gate; } return fake.fetchImpl(...input);
+    requests++; if (requests <= 2) { entered(); await gate; } return fake.fetchImpl(...input);
   } });
   const first = send(); await started;
-  const second = await send(); assert.equal(second.response.status, 429); assert.equal(second.body.code, 'AI_BUSY'); assert.equal(requests, 1);
-  release(); assert.equal((await first).body.status, 'completed'); assert.equal(requests, 4);
+  const second = send();
+  for (let i = 0; i < 100 && requests < 2; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  const third = await send(); assert.equal(third.response.status, 429); assert.equal(third.body.code, 'AI_BUSY');
+  release(); assert.equal((await first).body.status, 'completed'); assert.equal((await second).body.status, 'completed'); assert.equal(requests, 8);
 });
 
 test('HTTP final validation failure retains usage and costs; full history stays in analysis prompt', async t => {

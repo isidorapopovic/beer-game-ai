@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { AiPolicyError, maximumRunCost } from './aiPolicy.mjs';
 
-const active = new Set(); // One Node process; shared even between server instances for one path.
+const active = new Map(); // Ticket IDs, shared between server instances using one ledger path.
 const units = usd => Math.ceil(usd * 1_000_000_000);
 const validUnits = value => Number.isSafeInteger(value) && value >= 0;
 const unavailable = () => new AiPolicyError('LEDGER_UNAVAILABLE', 'AI usage records are unavailable. Restore the local ledger before requesting AI.');
@@ -49,7 +49,7 @@ export function createUsageLedger({ policy, now = Date.now }) {
   }
   return {
     admit(workflow) {
-      if (active.has(path)) throw new AiPolicyError('AI_BUSY', 'An AI action is already running. Try again shortly.', 429, 1);
+      if ((active.get(path)?.size ?? 0) >= policy.maxActive) throw new AiPolicyError('AI_BUSY', 'Two AI actions are already running. Try again shortly.', 429, 1);
       const at = now(); const day = new Date(at).toISOString().slice(0, 10);
       const data = load();
       data.recent = data.recent.filter(t => t > at - 60_000);
@@ -68,7 +68,8 @@ export function createUsageLedger({ policy, now = Date.now }) {
       entries.push({ id: ticket.id, at, reserved, charge: reserved, status: 'reserved', model: policy.model, priceDate: policy.profile.priceDate });
       data.days[day] = entries; data.recent.push(at);
       save(data); // Durable reservation and quota slot BEFORE any provider dispatch.
-      active.add(path);
+      if (!active.has(path)) active.set(path, new Set());
+      active.get(path).add(ticket.id);
       return ticket;
     },
     finish(ticket, evidence) {
@@ -84,7 +85,7 @@ export function createUsageLedger({ policy, now = Date.now }) {
         }
         return { reservationStatus: entry.status, chargedEstimateUsd: entry.charge / 1_000_000_000,
           dailyAllowanceUsd: policy.dailyBudgetUsd, reconciliationVerified: policy.reconcileVerified };
-      } finally { active.delete(path); }
+      } finally { active.get(path)?.delete(ticket.id); if (!active.get(path)?.size) active.delete(path); }
     },
   };
 }

@@ -234,3 +234,8 @@ same branch separately. No runtime changes or live AI requests are involved.
 Public web retrieval of the repository page returned a cache-miss error in the
 available web tool. Remote Git verification is used to confirm branch identity;
 no interactive GitHub web-page inspection is claimed.
+
+
+## Later W08 browser verification
+
+The original pending T017 was subsequently verified with actual Chrome interaction during spec 004: invalid submission preserved advice/week, valid submission advanced and cleared stale advice/usage, persisted events remained. See [W08 evidence](../004-secure-game/implementation-evidence.md) and [browser artifact](../004-secure-game/browser-results.json). The original session above remains an accurate historical record. Spec 001 live acceptance remains open.
